@@ -1,0 +1,71 @@
+{
+  "name": "Early Bird",
+  "version": "0.5.1",
+  "appRoot": "/Users/elikagan/Desktop/Claude stuff/dealer-exchange",
+  "appServeRoot": "/tmp/early-bird",
+  "appUrl": "http://localhost:8094",
+  "designSystemCss": "design-system.css",
+  "appHtml": "index.html",
+  "repo": "https://github.com/elikagan/early-bird",
+  "apiBase": "https://early-bird.objectlesson.workers.dev",
+
+  "users": {
+    "freshBuyer": { "id": "99db7c21-d996-4ef0-8024-e4b2f67849bc", "name": null, "role": "buyer" },
+    "loubna": { "id": "9cc49ca0-1235-43aa-bbcb-93a0742b9aea", "name": "Loubna Maher", "role": "buyer" },
+    "marco": { "id": "5a021f0e-4b9b-40bb-9786-595629acfb0a", "name": "Marco Rivera", "role": "buyer" },
+    "freshDealer": { "id": "fc1df7fa-2247-4d7a-94dd-9a84d1abd8b1", "name": "Sarah Chen", "role": "dealer" },
+    "eli": { "id": "8935f2ac-4998-4e6d-9c31-47dbbce896fd", "name": "Eli", "role": "dealer" }
+  },
+
+  "theme": {
+    "primary": "#0066FF",
+    "onPrimary": "#FFFFFF",
+    "secondary": "#555555",
+    "surface": "#FAFAF8",
+    "surfaceContainer": "#F0EFEC",
+    "onSurface": "#1A1A1A",
+    "onSurfaceVariant": "#555555",
+    "outline": "#555555",
+    "outlineVariant": "#888888",
+    "error": "#D32F2F",
+    "success": "#2E7D32",
+    "typeface": "JetBrains Mono",
+    "shapeScale": {
+      "none": "0px",
+      "extraSmall": "4px",
+      "small": "8px",
+      "medium": "12px",
+      "large": "16px",
+      "extraLarge": "28px",
+      "full": "9999px"
+    }
+  },
+
+  "screens": [
+    { "id": "landing-buyer", "name": "Landing (Buyer)", "section": "Pre-Auth", "desc": "Marketing page with markets list and sign-up", "setup": { "clearAuth": true, "eval": "showScreen('landing'); loadLanding();" } },
+    { "id": "landing-dealer", "name": "Landing (Dealer)", "section": "Pre-Auth", "desc": "Dealer entry with value prop", "setup": { "clearAuth": true, "eval": "showScreen('dealer-landing')" } },
+    { "id": "onboarding", "name": "Onboarding", "section": "Pre-Auth", "desc": "Photo + name setup", "setup": { "clearAuth": true, "eval": "showScreen('onboarding')" } },
+    { "id": "verify-success", "name": "Verify (Success)", "section": "Pre-Auth", "desc": "Magic link verified", "setup": { "clearAuth": true, "eval": "showScreen('verify'); document.getElementById('verify-status').textContent=\"You're in.\";" } },
+    { "id": "verify-failure", "name": "Verify (Failure)", "section": "Pre-Auth", "desc": "Magic link expired", "setup": { "clearAuth": true, "eval": "showScreen('verify'); document.getElementById('verify-status').textContent='Link expired.'; document.getElementById('verify-status').className='verify-error';" } },
+
+    { "id": "feed", "name": "Feed", "section": "Buyer", "desc": "Browse items", "setup": { "user": "loubna", "eval": "switchTab('feed');" } },
+    { "id": "feed-saved", "name": "Feed (Saved)", "section": "Buyer", "desc": "Favorited items", "setup": { "user": "loubna", "eval": "switchTab('feed'); setTimeout(()=>setBrowseMode('saved', document.querySelector('.seg-btn:last-child')), 1000);" } },
+    { "id": "item-detail-live", "name": "Item Detail (Live)", "section": "Buyer", "desc": "Full item with compose", "setup": { "user": "loubna", "eval": "openItem('e12a7cda-23f4-4ad3-b10a-5751c4b4f970');" } },
+    { "id": "item-detail-conversation", "name": "Item Detail (Conversation)", "section": "Buyer", "desc": "Compact header + chat thread", "setup": { "user": "loubna", "eval": "openItem('e12a7cda-23f4-4ad3-b10a-5751c4b4f970');" } },
+    { "id": "item-detail-held", "name": "Item Detail (Held)", "section": "Buyer", "desc": "Item on hold", "setup": { "user": "loubna", "eval": "openItem('6b358975-12f8-416f-a099-f74a5aef3f13');" } },
+    { "id": "item-detail-sold", "name": "Item Detail (Sold)", "section": "Buyer", "desc": "Sold item", "setup": { "user": "loubna", "eval": "openItem('e9968495-4346-4090-91db-39f15f5643cc');" } },
+    { "id": "compose", "name": "Compose", "section": "Buyer", "desc": "Message options chips", "setup": { "user": "marco", "eval": "openItem('e12a7cda-23f4-4ad3-b10a-5751c4b4f970'); setTimeout(()=>document.getElementById('detail-actions')?.scrollIntoView(), 1500);" } },
+    { "id": "watching", "name": "Watching", "section": "Buyer", "desc": "Favorited + inquired items", "setup": { "user": "loubna", "eval": "switchTab('messages');" } },
+    { "id": "account-buyer", "name": "Account (Buyer)", "section": "Buyer", "desc": "Name + preferences", "setup": { "user": "loubna", "eval": "switchTab('settings');" } },
+
+    { "id": "booth-setup", "name": "Booth (Setup)", "section": "Dealer", "desc": "First time market setup", "setup": { "user": "freshDealer", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('dealer-home');" } },
+    { "id": "booth-active", "name": "Booth (Active)", "section": "Dealer", "desc": "Items with stats and actions", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('dealer-home');" } },
+    { "id": "booth-picker", "name": "Booth (Market Picker)", "section": "Dealer", "desc": "Switch between events", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('dealer-home'); setTimeout(()=>openMarketPicker(), 1500);" } },
+    { "id": "add-item", "name": "Add Item", "section": "Dealer", "desc": "Photo upload + price + details", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); showAddItem();" } },
+    { "id": "my-item", "name": "My Item (Seller View)", "section": "Dealer", "desc": "Own item with inquiry threads", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); openItem('e12a7cda-23f4-4ad3-b10a-5751c4b4f970');" } },
+    { "id": "account-dealer", "name": "Account (Dealer)", "section": "Dealer", "desc": "Name + biz + payment + preferences", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('settings');" } },
+
+    { "id": "feed-dealer", "name": "Feed (as Dealer)", "section": "Dealer as Buyer", "desc": "Browsing with dealer nav", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('feed');" } },
+    { "id": "item-detail-dealer", "name": "Item Detail (as Dealer)", "section": "Dealer as Buyer", "desc": "Another dealer's item with dealer nav", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); openItem('e9968495-4346-4090-91db-39f15f5643cc');" } }
+  ]
+}

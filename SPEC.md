@@ -10,25 +10,36 @@ EDS is not tied to any specific project. It loads a project's design system CSS 
 ## Multi-Project Support
 
 ### Project Configuration
-Each project is defined by a config file that tells EDS where to find its files:
+Each project is defined by a JSON config file in `eds/projects/`:
 
 ```json
 {
   "name": "Early Bird",
   "version": "0.5.1",
+  "appRoot": "/Users/elikagan/Desktop/Claude stuff/dealer-exchange",
   "appUrl": "http://localhost:8094",
-  "designSystemCss": "/path/to/design-system.css",
-  "appHtml": "/path/to/index.html",
+  "designSystemCss": "design-system.css",
+  "appHtml": "index.html",
   "screens": [
     {
       "id": "feed",
       "name": "Feed",
       "section": "Buyer",
-      "setup": { "eval": "switchTab('feed')" }
+      "desc": "Browse items with TikTok-style scroll",
+      "setup": { "user": "eli", "eval": "switchTab('feed')" }
     }
   ],
+  "users": {
+    "eli": "8935f2ac-4998-4e6d-9c31-47dbbce896fd",
+    "loubna": "9cc49ca0-1235-43aa-bbcb-93a0742b9aea"
+  },
   "theme": {
     "primary": "#0066FF",
+    "onPrimary": "#FFFFFF",
+    "surface": "#FAFAF8",
+    "onSurface": "#1A1A1A",
+    "outline": "#555555",
+    "outlineVariant": "#888888",
     "typeface": "JetBrains Mono",
     "shapeScale": "md3-default"
   }
@@ -36,106 +47,219 @@ Each project is defined by a config file that tells EDS where to find its files:
 ```
 
 ### Project Switcher
-EDS has a project dropdown in the top bar. Switching projects reloads the design system panel, the screen list, and the iframe source. Tickets are scoped to a project.
+EDS has a project dropdown in the top bar. Switching projects:
+- Reloads the iframe with the new project's `appUrl`
+- Repopulates the design system panel from the new project's `design-system.css`
+- Updates the screen navigation from the new project's `screens` array
+- Switches the ticket view to the new project's tickets
+
+### Bootstrapping a New Project
+When a project doesn't yet have a `design-system.css` file, EDS generates one from the project config's `theme` values. This starter CSS contains:
+- All M3 color tokens mapped from the 5 key colors
+- The typography scale using the specified typeface
+- M3 shape scale and spacing tokens
+- Skeleton component classes (buttons, inputs, cards, etc.) with M3 specs
+- The grid system (4-column mobile, 16dp margins, 16dp gutters)
+
+The designer then customizes this CSS through tickets.
 
 ---
 
 ## Column 1: UI Display
 
 ### Dimensions
-- Minimum width: 380px (width of iPhone frame content)
+- Minimum width: 380px (width of iPhone 15 content area)
 - Column is resizable via drag handle on right edge
-- Phone silhouette toggleable via eye icon in column header
+- Minimum enforced — cannot shrink below phone width
 
 ### iPhone Frame
-- iPhone 15 silhouette: 390x844px, 50px border-radius, Dynamic Island notch
-- Content area: 362x770px after accounting for frame padding and notch
-- Scaled to fit column via CSS transform (typically 0.7-0.85x)
-- Home indicator bar at bottom
-
-### iframe
-- Loads from project's `appUrl` (localhost during development)
-- Same-origin for localStorage access
-- Each screen navigated via eval defined in project config
-
-### Grid Overlay
-- Toggleable via grid icon in column header
-- 4-column layout: 16px margins, 16px gutters
-- 8dp baseline grid shown as subtle horizontal lines
-- Grid defined in design system — if the DS changes grid values, overlay updates
-- Semi-transparent blue (#0066FF at 8% opacity)
-
-### Component Tooltips
-- On hover over any element in the iframe, show the component class name
-- Implementation: scan iframe DOM for elements with classes matching known components
-- Tooltip appears above the element, shows class name + component category
-- Example: hovering a blue button shows "btn-primary (Button > Filled)"
+- iPhone 15 silhouette: 390x844px, 50px border-radius
+- Dynamic Island: 126x36px centered pill at top
+- Home indicator: 140x5px centered bar at bottom
+- Frame color: #000 with subtle #333 outer border
+- Content area: ~362x770px after frame padding and notch clearance
+- Scaled via CSS transform to fit column height (typically 0.7-0.85x depending on viewport)
 
 ### Phone Toggle
-- Eye icon toggles the iPhone silhouette on/off
-- When off: iframe renders at full column width with no phone chrome
-- Useful for reviewing long scrollable pages without the frame constraint
+- Eye icon button in column header (top-right)
+- Toggles the iPhone silhouette on/off
+- When OFF: iframe renders at full column width, no frame, no notch, no home indicator
+- When OFF: content scrolls naturally — useful for long pages
+- Toggle state persists in localStorage
+
+### iframe
+- Loads from project's `appUrl` (localhost during development, same origin)
+- Same-origin access for localStorage manipulation (setting auth tokens for different users per screen)
+- Each screen navigated by: setting localStorage for the right user → reloading → running the screen's `eval` string from the project config
+- iframe ID: `eds-app-frame`
+
+### Grid Overlay
+- Toggleable via grid icon button in column header (next to phone toggle)
+- Renders as an absolutely-positioned transparent div overlaying the iframe
+- 4-column layout: 16dp margins on left/right, 16dp gutters between columns
+- Columns shown as semi-transparent blue (#0066FF at 6% opacity)
+- 8dp horizontal baseline lines shown as 1px #0066FF at 4% opacity
+- Grid values come from the design system — if the DS changes grid tokens, the overlay updates
+- Toggle state persists in localStorage
+
+### Component Tooltips
+- When mouse hovers over an element in the iframe, show a tooltip with the component's class name
+- Implementation: inject a mouseover listener into the iframe that scans for elements with classes matching known components from the design system
+- Known components are read from the design-system.css file (any class that's defined there)
+- Tooltip format: `btn-primary` (class) + `Button > Filled` (category from DS panel)
+- Tooltip appears above the element, follows cursor horizontally
+- Tooltip styled: dark bg (#333), white text, 11px mono, 4px padding, 4px radius
 
 ---
 
 ## Column 2: Design System
 
 ### Dimensions
-- Fills remaining space between Column 1 and Column 3
+- Fills remaining horizontal space between Column 1 and Column 3
 - Minimum width: 300px
 - Scrollable vertically
-- Tabbed navigation at top
+- Has its own 8dp grid overlay (always visible, subtle)
 
-### Tabs
-1. **Foundations** — colors, typography, grid, spacing, elevation, shape, motion
-2. **Atoms** — buttons, inputs, icons, badges, dividers, toggles
-3. **Molecules** — cards, list items, headers, navigation bars, status pills, chips
-4. **Organisms** — complete screen sections (booth setup card, item detail header, etc.)
+### Tab Navigation
+Fixed tab bar at top of column:
+1. **Foundations** — colors, typography, grid/spacing, elevation, shape, motion
+2. **Atoms** — buttons, inputs, icons, badges, dividers, toggles, switches
+3. **Molecules** — cards, list items/rows, headers/app bars, navigation, status pills, chips, bottom sheets
+4. **Organisms** — complete screen sections (e.g., booth setup card, item detail compact header, inquiry thread)
 
-### Foundation: Colors
-Based on M3 color system. Shows:
-- 5 key source colors with swatches
-- All 29+ derived color roles with name, hex, and usage description
-- Semantic colors: success, error, warning, info
-- Background and surface tones
-- All displayed on 8dp grid
+### How a Foundation is Displayed
 
-### Foundation: Typography
-Based on M3 type scale, customized per project. Shows:
-- 15 type styles: display (L/M/S), headline (L/M/S), title (L/M/S), body (L/M/S), label (L/M/S)
-- Each shows: font family, weight, size, line-height, letter-spacing
-- Live preview of each style with sample text
-- For Early Bird: JetBrains Mono everywhere, custom size scale
+Example: Colors section
+```
+┌─────────────────────────────────┐
+│ COLORS                          │
+│                                 │
+│ Primary                         │
+│ ┌──────┐ #0066FF                │
+│ │      │ --md-sys-color-primary │
+│ └──────┘ Buttons, links, active │
+│                                 │
+│ On Primary                      │
+│ ┌──────┐ #FFFFFF                │
+│ │      │ --md-sys-color-on-primary│
+│ └──────┘ Text on primary bg     │
+│                                 │
+│ Surface                         │
+│ ┌──────┐ #FAFAF8                │
+│ │      │ --md-sys-color-surface │
+│ └──────┘ Page backgrounds       │
+│ ...                             │
+└─────────────────────────────────┘
+```
 
-### Foundation: Grid & Spacing
-- 4-column mobile grid: 16dp margins, 16dp gutters
-- 8dp baseline spacing system
-- Spacing tokens: 4, 8, 12, 16, 20, 24, 32, 48, 64
-- Visual ruler showing each spacing value
+Each color shows: swatch, hex value, CSS custom property name, usage description.
 
-### Foundation: Elevation
-- M3's 5 elevation levels with shadow values
-- Preview cards at each elevation
+Example: Typography section
+```
+┌─────────────────────────────────┐
+│ TYPOGRAPHY                      │
+│                                 │
+│ Headline Large                  │
+│ This is headline large     24px │
+│ JetBrains Mono · 700 · 1.2 lh  │
+│ --md-sys-typescale-headline-lg  │
+│                                 │
+│ Body Medium                     │
+│ This is body medium text   13px │
+│ JetBrains Mono · 400 · 1.5 lh  │
+│ --md-sys-typescale-body-md      │
+│ ...                             │
+└─────────────────────────────────┘
+```
 
-### Foundation: Shape
-- M3's 7 shape levels: None (0), XS (4dp), S (8dp), M (12dp), L (16dp), XL (28dp), Full (pill)
-- Preview of each with a sample container
+Each type style shows: sample text rendered in that style, size, font/weight/line-height, CSS custom property.
 
-### Component Display
+### How a Component is Displayed
+
+Example: Button > Filled (Primary)
+```
+┌─────────────────────────────────┐
+│ BUTTON > FILLED                 │
+│ .btn-primary                    │
+│                                 │
+│ States:                         │
+│ ┌──────────┐ ┌──────────┐      │
+│ │ Enabled  │ │ Disabled │      │
+│ └──────────┘ └──────────┘      │
+│ ┌──────────┐ ┌──────────┐      │
+│ │ Hovered  │ │ Focused  │      │
+│ └──────────┘ └──────────┘      │
+│ ┌──────────┐                    │
+│ │ Pressed  │                    │
+│ └──────────┘                    │
+│                                 │
+│ Variants:                       │
+│ .btn-primary.btn-compact        │
+│ .btn-primary.loading            │
+│                                 │
+│ Tokens:                         │
+│ bg: --md-sys-color-primary      │
+│ text: --md-sys-color-on-primary │
+│ height: 48px min                │
+│ padding: 14px 24px              │
+│ radius: --md-sys-shape-sm (8dp) │
+│                                 │
+│ HTML:                           │
+│ <button class="btn-primary">    │
+│   Label                         │
+│ </button>                       │
+└─────────────────────────────────┘
+```
+
 Each component shows:
-- Visual preview in all states (enabled, disabled, hovered, focused, pressed)
-- CSS class name prominently displayed
-- The M3 tokens it uses (clickable to jump to foundation)
-- Size variants if applicable
-- Code snippet showing HTML structure
-- 8dp grid alignment visible
+1. Category + name
+2. CSS class name (prominently)
+3. Visual preview of every state (rendered live, not images)
+4. Variants with their modifier classes
+5. Token references (clickable — jumps to that foundation)
+6. Size specs (height, padding, radius — in dp values)
+7. HTML code snippet
 
-### Design System Persistence
-The design system is stored as a CSS file (`design-system.css`). This file is:
-- The single source of truth for all visual styling
-- Loaded by the app via `<link>` tag
-- Editable only through tickets (no direct manipulation)
-- Version-controlled in the project repo
+### Design System Source of Truth
+The design system panel is populated by PARSING the `design-system.css` file. It's not hardcoded in the studio. This means:
+- When a ticket changes a token value, the panel updates on next reload
+- When a new component class is added, it appears in the panel
+- The CSS file has structured comments that the parser reads:
+
+```css
+/* @eds-foundation: Colors */
+/* @eds-token: primary | Primary brand color | Buttons, links, active states */
+--md-sys-color-primary: #0066FF;
+
+/* @eds-component: Button > Filled */
+/* @eds-class: btn-primary */
+/* @eds-variants: btn-compact, loading */
+.btn-primary {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  /* ... */
+}
+```
+
+**CSS Comment Metadata Format (strict):**
+```
+/* @eds-foundation: [Section Name] */
+/* @eds-token: [name] | [description] | [usage] */
+/* @eds-component: [Category] > [Name] */
+/* @eds-class: [css-class-name] */
+/* @eds-variants: [variant1], [variant2], ... */
+/* @eds-states: [enabled], [disabled], [hovered], [focused], [pressed] */
+```
+
+Rules:
+- Each `@eds-` comment is a single line (no multiline)
+- Pipe (`|`) separates fields within a comment
+- `@eds-component` must appear before the class definition it describes
+- `@eds-class` must match exactly one CSS selector in the file
+- If parsing fails on a comment, skip it silently and continue
+- Ticket numbers can't change component names — if a name changes, it's a new component (old one stays in archive)
+
+This comment-based metadata system keeps the CSS as the source of truth while giving EDS enough information to build the panel.
 
 ---
 
@@ -147,83 +271,136 @@ The design system is stored as a CSS file (`design-system.css`). This file is:
 - Resizable via drag handle on left edge
 
 ### Ticket Input
-- Text input at bottom of column (like a chat input)
-- Send button or Enter to submit
+- Fixed at bottom of column (like iMessage)
+- Multiline textarea, auto-expanding (1-4 lines)
+- Send button (or Cmd+Enter)
 - Creates a new ticket card above
 
-### Ticket Card Structure
+### Ticket Card
 ```
-┌─────────────────────────────┐
-│ #14 · [DS] · 2 min ago      │
-│                              │
-│ "Make the header font 18px   │
-│  and add 8px bottom padding" │
-│                              │
-│ ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ │
-│ Changed .app-header-title    │
-│ font-size from 16px to 18px. │
-│ Added padding-bottom: 8px    │
-│ to .app-header-row.          │
-│                     ✓ Done   │
-└─────────────────────────────┘
+┌─────────────────────────────────┐
+│ #14 · [DS] · 2 min ago     ⏳   │
+│                                 │
+│ "Make the header font 18px      │
+│  and add 8px bottom padding"    │
+│                                 │
+│ ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ │
+│ Changed .app-header-title       │
+│ font-size: 16px → 18px.        │
+│ Added padding-bottom: 8px       │
+│ to .app-header-row.             │
+│ Files: design-system.css        │
+│                        ✓ Done   │
+└─────────────────────────────────┘
 ```
 
 Fields:
-- **Number:** Sequential (#1, #2, ...)
-- **Scope tag:** [DS] for design system, [Screen: Feed] for screen-specific
-- **Timestamp:** Relative time
-- **User instruction:** The original text
-- **Claude response:** What was changed, which files, which components
-- **Status:** ⏳ Pending → 🔄 Working → ✓ Done
+- **Number:** Sequential per project (#1, #2, ...)
+- **Scope tag:** `[DS]` for design system changes, `[Screen: Feed]` for screen-specific, `[Global]` for app-wide
+- **Timestamp:** Relative time ("2 min ago", "1h ago", "yesterday")
+- **User instruction:** The original text, always visible
+- **Claude response:** What was changed — which classes, which properties, which files. Specific and verifiable.
+- **Status icon:** ⏳ Pending → 🔄 Working → ✓ Done
 
 ### Ticket Lifecycle
 1. User types instruction, presses Send
-2. Ticket created with status ⏳ Pending
-3. Claude reads ticket, status → 🔄 Working
-4. Claude makes change, writes response, status → ✓ Done
-5. Completed ticket fades slightly and compresses
-6. Archived tickets settle to bottom of the stack
+2. Ticket created with ⏳ Pending status, stored via API
+3. Claude Code session detects new ticket (via polling or notification)
+4. Status → 🔄 Working
+5. Claude makes the change to design-system.css and/or app HTML
+6. Claude writes the local files via the write server
+7. iframe reloads, change visible in Column 1
+8. Claude writes response text describing what changed
+9. Status → ✓ Done
+10. Ticket card visually compresses (instruction still readable, response collapsed)
+11. After several completed tickets, old ones archive to a scrollable "completed" section at bottom
 
-### Ticket Persistence
-- Stored via API (Cloudflare Worker + Supabase)
-- Scoped to project + screen
-- Retrievable across sessions
-- Exportable as markdown
+### Ticket Persistence & API
+Stored via Cloudflare Worker + Supabase (same infrastructure as Early Bird):
+- `POST /api/eds/tickets` — create ticket `{ project, screen, instruction, scope }`
+- `PATCH /api/eds/tickets/:id` — update `{ status, response }`
+- `GET /api/eds/tickets?project=early-bird&screen=feed` — per-screen tickets
+- `GET /api/eds/tickets?project=early-bird&scope=ds` — all design system tickets
+- `GET /api/eds/tickets?project=early-bird` — all tickets for project
 
-### Ticket Views
-- **Per-screen:** Shows only tickets for the current screen
-- **Design System:** Shows all [DS] tickets across all screens
-- **All:** Shows every ticket for the project, chronological
-- Toggle between views via tabs at top of column
+Tickets persist across sessions. A new Claude Code session can read all pending tickets and resume where the last left off.
+
+### Ticket Views (tabs at top of Column 3)
+- **This Screen:** Tickets for the currently selected screen
+- **Design System:** All [DS] tickets across all screens
+- **All:** Every ticket for the project, chronological
+- **Archive:** Completed tickets only
+
+### How Tickets Reach Claude
+Two modes:
+
+**Live mode (Claude Code session running):**
+- A cron job in the session polls `GET /api/eds/tickets?status=pending` every 10 seconds
+- When a new ticket is found, Claude processes it immediately
+- Status updates and responses are written back via the API
+- Changes are written to files via the local write server
+
+**Async mode (no session running):**
+- Tickets queue with ⏳ Pending status
+- User starts a Claude Code session and says "process EDS tickets"
+- Claude reads all pending tickets and processes them in order
+- Useful for batching work or when the user wants to write multiple tickets then process
 
 ---
 
 ## Bottom Navigation
 
+### Layout
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│ PRE-AUTH ● ● ● ● | BUYER ● ● ● ● ● ● | DEALER ● ● ● ● | ACCT ● │ DS  Fnd · Atm · Mol · Org │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
 ### Screen Nav (Left Side)
-Organized by section, matching the project config:
-```
-PRE-AUTH  ● ● ● ●  |  BUYER  ● ● ● ● ● ●  |  DEALER  ● ● ● ● ●  |  ACCOUNT  ●
-```
-Each dot is clickable, shows screen name on hover. Active screen highlighted.
+- Dots organized by section, matching the project config's `screens` array
+- Section labels in small caps between dot groups
+- Active screen dot is filled/highlighted
+- Dots with tickets show a count badge
+- Hover shows screen name
+- Click navigates: updates Column 1 iframe, Column 3 tickets
 
 ### Design System Nav (Right Side)
-```
-FOUNDATIONS  Colors · Type · Grid · Elevation  |  ATOMS  ● ● ●  |  MOLECULES  ● ● ●
-```
-Clicking a DS section scrolls Column 2 to that section OR opens it as the primary view.
+- Section labels: Foundations · Atoms · Molecules · Organisms
+- Click scrolls Column 2 to that section
+- OR: click replaces Column 2 with a focused view of just that section
 
 ---
 
 ## Enforcement Rules
 
-These are displayed permanently in the EDS UI (literally rendered as text in a rules bar):
+Displayed permanently in the EDS UI as a thin rules bar between the top bar and the columns:
 
-1. **No inline styling.** All styling must be defined in design-system.css via component classes.
-2. **Components only.** Every element in the UI display must use a class from the design system. No ad-hoc HTML.
-3. **Grid alignment.** All components must align to the 8dp baseline grid.
-4. **Tickets required.** Every change must originate from a ticket. No silent modifications.
-5. **Verify before done.** A ticket cannot be marked done until the change is visually confirmed in the UI display.
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│ ⚠ No inline styling │ Components only │ 8dp grid │ Tickets required │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+1. **No inline styling.** All styling must be defined in `design-system.css` via component classes. `style=""` attributes are prohibited on app HTML elements.
+2. **Components only.** Every visible element in the UI display must use a class from the design system. No unstyled HTML, no ad-hoc classes.
+3. **8dp grid alignment.** All spacing and sizing values must be multiples of 8dp (with 4dp for fine adjustments). The grid overlay in Column 1 makes violations visible.
+4. **Tickets required.** Every change must originate from a ticket in Column 3. No silent modifications to CSS or HTML.
+5. **Verify before done.** A ticket cannot be marked ✓ Done until the change is visually confirmed in Column 1's iframe.
+
+---
+
+## State Persistence
+
+When EDS is closed and reopened:
+- **Active screen:** Restored from localStorage (`eds-active-screen`)
+- **Column widths:** Restored from localStorage (`eds-col-widths`)
+- **Phone toggle state:** Restored from localStorage (`eds-phone-visible`)
+- **Grid toggle state:** Restored from localStorage (`eds-grid-visible`)
+- **Active DS tab:** Restored from localStorage (`eds-ds-tab`)
+- **Ticket view tab:** Restored from localStorage (`eds-ticket-view`)
+- **Active project:** Restored from localStorage (`eds-active-project`)
+- **Pending tickets:** Persisted in API (Supabase), always available
 
 ---
 
@@ -231,69 +408,118 @@ These are displayed permanently in the EDS UI (literally rendered as text in a r
 
 ### Architecture
 ```
-localhost:8094  →  Ruby httpd serving the app (index.html + design-system.css)
-localhost:8097  →  Node.js write server (accepts POST, writes files to disk)
-localhost:8094/studio/  →  EDS UI (loaded from same server as app)
+localhost:[project-port]    →  Ruby/Python httpd serving the app files
+localhost:8097              →  Node.js write server (shared across projects)
+localhost:[project-port]/   →  App loads index.html + design-system.css from here
 ```
 
-### Write Server (studio/server.js)
-~30 lines of Node.js:
+EDS studio itself is opened directly as a file (`open eds/studio/index.html`) or served from its own port. Since the iframe points to the project's localhost, it's same-origin with the app but not necessarily with the studio. For localStorage access to work, the studio should be served from the same port as the app (e.g., `localhost:8094/eds/` for Early Bird).
+
+### Write Server (`studio/server.js`)
+Shared across all projects. The project root path comes from the POST request body.
+
 ```javascript
 const http = require('http');
 const fs = require('fs');
+const path = require('path');
+
+const ALLOWED_EXTENSIONS = ['.css', '.html', '.json'];
 
 http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
 
-  if (req.method === 'OPTIONS') { res.end(); return; }
-
-  if (req.method === 'POST') {
+  if (req.method === 'POST' && req.url === '/write') {
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', () => {
-      const { file, content } = JSON.parse(body);
-      // Only allow writing to specific files
-      const allowed = ['design-system.css', 'index.html'];
-      if (!allowed.includes(file)) { res.writeHead(403); res.end('Forbidden'); return; }
-      fs.writeFileSync(`/path/to/project/${file}`, content);
-      res.writeHead(200);
-      res.end('OK');
+      try {
+        const { projectRoot, file, content } = JSON.parse(body);
+        const ext = path.extname(file);
+        if (!ALLOWED_EXTENSIONS.includes(ext)) {
+          res.writeHead(403); res.end('File type not allowed'); return;
+        }
+        // Prevent path traversal
+        const resolved = path.resolve(projectRoot, file);
+        if (!resolved.startsWith(path.resolve(projectRoot))) {
+          res.writeHead(403); res.end('Path traversal denied'); return;
+        }
+        fs.writeFileSync(resolved, content, 'utf8');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, file: resolved }));
+      } catch (e) {
+        res.writeHead(500); res.end(e.message);
+      }
     });
+  } else {
+    res.writeHead(404); res.end('Not found');
   }
-}).listen(8097);
+}).listen(8097, () => console.log('EDS write server on :8097'));
 ```
 
 ### Ticket API
-Reuses the existing Cloudflare Worker pattern:
-- `POST /api/eds/tickets` — create ticket
-- `PATCH /api/eds/tickets/:id` — update status/response
-- `GET /api/eds/tickets?project=early-bird&screen=feed` — get tickets
-- `GET /api/eds/tickets?project=early-bird&scope=ds` — design system tickets
+Reuses the Cloudflare Worker infrastructure. New Supabase table:
+
+```sql
+CREATE TABLE eds_tickets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project TEXT NOT NULL,
+  screen TEXT,
+  scope TEXT DEFAULT 'screen',
+  instruction TEXT NOT NULL,
+  response TEXT,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMPTZ DEFAULT now(),
+  completed_at TIMESTAMPTZ
+);
+CREATE INDEX idx_eds_tickets_project ON eds_tickets(project, created_at DESC);
+CREATE INDEX idx_eds_tickets_status ON eds_tickets(status);
+```
+
+---
+
+## EDS Internal Styling
+
+EDS itself uses its own CSS classes, prefixed with `eds-` to avoid collision with any project's design system:
+- `.eds-topbar`, `.eds-col`, `.eds-col-resize`, `.eds-phone`, `.eds-grid-overlay`
+- `.eds-ds-panel`, `.eds-ds-tab`, `.eds-ds-token`, `.eds-ds-component`
+- `.eds-ticket`, `.eds-ticket-input`, `.eds-ticket-card`, `.eds-ticket-done`
+- `.eds-nav`, `.eds-nav-dot`, `.eds-nav-section`
+- `.eds-rules-bar`
+
+EDS does NOT use the project's design system for its own UI. It has its own minimal dark-theme styling (dark bg, light text, monospace, minimal).
 
 ---
 
 ## File Structure
 ```
 eds/
-  README.md          — what EDS is and why
-  SPEC.md            — this file
-  CLAUDE.md          — rules for building EDS
+  README.md                — what EDS is and why it exists
+  SPEC.md                  — this file
+  CLAUDE.md                — rules for building EDS itself
   studio/
-    index.html       — the three-column UI
-    server.js        — local write server
+    index.html             — the three-column studio UI
+    server.js              — local write server (Node.js)
+    eds.css                — EDS's own styling (dark theme)
   projects/
-    early-bird.json  — project config for Early Bird
+    early-bird.json        — project config for Early Bird
 ```
 
 ---
 
 ## Implementation Priority
-1. **Column 1 (UI Display)** — iPhone frame + iframe + grid overlay + phone toggle
-2. **Column 3 (Tickets)** — Input, card creation, persistence via API
-3. **Column 2 (Design System)** — Start with foundations (colors, type, spacing), add components incrementally
-4. **Bottom Nav** — Screen navigation + DS section navigation
-5. **Write Server** — Local file writing for instant changes
-6. **Component Tooltips** — DOM scanning for component labels
-7. **Multi-project support** — Project config and switcher
+
+Multi-project support is DESIGNED IN from the start (all data structures, API calls, and file paths use project config), but the project switcher UI is built last since there's only one project initially. The data model supports it from day one; the dropdown comes later.
+
+1. **Project config + write server** — `projects/early-bird.json` + `server.js`. Define the data model and test file writing standalone.
+2. **Column 1 (UI Display)** — iPhone frame + iframe loading from project's `appUrl` + phone toggle. No grid or tooltips yet.
+3. **Column 3 (Tickets)** — Input, card creation, API persistence. The core interaction loop.
+4. **Ticket processing loop** — Claude reads pending tickets via `GET /api/eds/tickets?status=pending`. In live mode: a `CronCreate` job in Claude Code polls every 10-15 seconds. In async mode: user says "process tickets" and Claude reads + processes all pending.
+5. **Column 2 (Design System)** — Start with foundations only (colors + typography). Parse from CSS `@eds-` comments.
+6. **Bottom Nav** — Screen navigation dots from project config. DS section nav.
+7. **Grid overlay** — 4-column + 8dp baseline on Column 1.
+8. **Component tooltips** — Hover labels from iframe DOM scan.
+9. **Design system bootstrapper** — Generate starter `design-system.css` from project theme config.
+10. **Project switcher UI** — Dropdown in top bar. Last because only one project exists initially.
