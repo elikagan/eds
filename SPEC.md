@@ -509,24 +509,68 @@ eds/
 
 ---
 
-## First Run: Onboarding Early Bird
+## Project Onboarding
 
-After EDS is built, the first thing it does is onboard Early Bird. This is a defined sequence:
+EDS defines a strict contract for what a project repo must have to work with it. Any project — Early Bird or future ones — goes through the same onboarding process.
 
-1. **EDS reads `projects/early-bird.json`** — gets the app root, URL, theme, screens, users
-2. **EDS bootstraps `design-system.css`** in the Early Bird repo — generates it from the theme config using M3 tokens. This file starts with foundations (colors, typography, spacing, shape) and skeleton component classes.
-3. **Early Bird's `index.html` gets a `<link>` tag** added: `<link rel="stylesheet" href="design-system.css">`. This is the moment the external design system becomes the source of truth.
-4. **EDS's iframe loads Early Bird** from localhost — the app now renders with the external CSS applied on top of its existing inline styles.
-5. **Migration begins via tickets.** Each ticket moves one component's styling from the inline `<style>` block in `index.html` into `design-system.css`. The inline rule gets deleted, the DS rule takes over. This happens one component at a time, verified visually after each ticket.
+### The Contract: What a Project Needs
 
-The end state: `index.html` has zero styling in its `<style>` block. Everything is in `design-system.css`. Every element uses a component class from the design system.
+| Requirement | What | Why |
+|---|---|---|
+| **Project config** | `eds/projects/{name}.json` in the EDS repo | Tells EDS where files are, what screens exist, what theme to use |
+| **Design system CSS** | `design-system.css` in the project root | The single source of truth for all styling. EDS reads and writes this file. |
+| **Link tag in HTML** | `<link rel="stylesheet" href="design-system.css">` in the app's HTML `<head>`, BEFORE any inline `<style>` blocks | So the DS file loads and inline styles can be gradually migrated out |
+| **Local server** | App served on localhost at a known port | EDS loads the app in an iframe from this URL |
+| **CSS metadata comments** | `@eds-` structured comments in `design-system.css` | EDS parses these to populate the design system panel (Column 2) |
 
-**Early Bird must be prepared for this.** Its repo needs:
-- A placeholder `design-system.css` file (can be empty or just a comment) so the `<link>` tag doesn't 404
-- The `<link>` tag already in `index.html` pointing to it
-- The `ROADMAP.md`, `QA-NOTES.md`, and `CLAUDE.md` docs that EDS sessions will reference for what to build
+### Validation: EDS Checks on Load
 
-See Early Bird's `ROADMAP.md` "Technical Debt" and "Design System" sections for the migration plan.
+When EDS opens a project, it runs a validation check and reports status in the top bar:
+
+1. **Config exists?** — Does `projects/{name}.json` exist and parse as valid JSON?
+2. **App reachable?** — Can the iframe load `appUrl`? (Is the local server running?)
+3. **CSS file exists?** — Does `design-system.css` exist at the project root?
+4. **Link tag present?** — Does the app HTML contain `<link ... href="design-system.css">`?
+5. **Metadata parseable?** — Does the CSS file contain at least one `@eds-` comment?
+
+Each check shows ✓ or ✗ in a status row. If anything fails, EDS shows what's wrong and what to do.
+
+### Scaffolding: EDS Creates What's Missing
+
+If the project is new to EDS (no `design-system.css` exists), EDS can scaffold it:
+
+1. **Generate `design-system.css`** from the project config's `theme` values:
+   - All M3 color tokens derived from the key colors (primary, secondary, surface, error, success)
+   - Typography scale using the specified typeface (15 M3 type styles)
+   - Shape scale tokens (7 levels from the config)
+   - Spacing tokens (4, 8, 12, 16, 20, 24, 32, 48, 64)
+   - Grid system (4-column mobile, 16dp margins, 16dp gutters)
+   - Skeleton component classes (buttons, inputs, cards, etc.) with `@eds-` metadata comments
+   - Written to the project root via the write server
+
+2. **Inject `<link>` tag** into the app HTML if missing:
+   - Reads the HTML file via the write server
+   - Inserts `<link rel="stylesheet" href="design-system.css">` before the first `<style>` tag
+   - Writes back via the write server
+
+3. **Report results** in the ticket system:
+   - Auto-creates ticket #1: "EDS onboarding: scaffolded design-system.css with M3 tokens from theme config"
+   - Lists every token and component class that was generated
+   - Status: ✓ Done
+
+After scaffolding, the project is ready for design work via tickets.
+
+### Onboarding Early Bird (First Project)
+
+Early Bird is the first project to use EDS. Its config is at `eds/projects/early-bird.json`. The onboarding sequence:
+
+1. EDS reads config → gets app root, URL, theme (JetBrains Mono, #0066FF primary, warm palette), 22 screens, 5 test users
+2. Scaffolding generates `design-system.css` with Early Bird's theme applied to M3 tokens
+3. Link tag injected into `index.html`
+4. iframe loads the app — now rendering with both the new DS CSS and the existing inline styles
+5. Migration begins via tickets: each ticket moves one component from inline `<style>` to `design-system.css`, deleting the inline rule. One component at a time, verified visually.
+
+End state: `index.html` has zero inline styling. Everything in `design-system.css`. Every element uses a component class.
 
 ---
 
