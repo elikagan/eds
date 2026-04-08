@@ -3,6 +3,7 @@
   "version": "0.5.1",
   "appRoot": "/Users/elikagan/Desktop/Claude stuff/dealer-exchange",
   "appServeRoot": "/tmp/early-bird",
+  "_note_appServeRoot": "Ruby httpd serves from /tmp because paths with spaces break WEBrick. Files must be copied here before preview. This is a dev environment quirk, not a persistence issue — source of truth is appRoot.",
   "appUrl": "http://localhost:8094",
   "designSystemCss": "design-system.css",
   "appHtml": "index.html",
@@ -55,7 +56,7 @@
     { "id": "item-detail-held", "name": "Item Detail (Held)", "section": "Buyer", "desc": "Item on hold", "setup": { "user": "loubna", "eval": "openItem('6b358975-12f8-416f-a099-f74a5aef3f13');" } },
     { "id": "item-detail-sold", "name": "Item Detail (Sold)", "section": "Buyer", "desc": "Sold item", "setup": { "user": "loubna", "eval": "openItem('e9968495-4346-4090-91db-39f15f5643cc');" } },
     { "id": "compose", "name": "Compose", "section": "Buyer", "desc": "Message options chips", "setup": { "user": "marco", "eval": "openItem('e12a7cda-23f4-4ad3-b10a-5751c4b4f970'); setTimeout(()=>document.getElementById('detail-actions')?.scrollIntoView(), 1500);" } },
-    { "id": "watching", "name": "Watching", "section": "Buyer", "desc": "Favorited + inquired items", "setup": { "user": "loubna", "eval": "switchTab('messages');" } },
+    { "id": "watching", "name": "Watching", "section": "Buyer", "desc": "Favorited + inquired items", "setup": { "user": "loubna", "eval": "switchTab('messages');" }, "_note": "Still calls switchTab('messages') because the internal tab ID hasn't been renamed yet in v0.5.1. When the nav is rebuilt, this eval should change to switchTab('watching')." },
     { "id": "account-buyer", "name": "Account (Buyer)", "section": "Buyer", "desc": "Name + preferences", "setup": { "user": "loubna", "eval": "switchTab('settings');" } },
 
     { "id": "booth-setup", "name": "Booth (Setup)", "section": "Dealer", "desc": "First time market setup", "setup": { "user": "freshDealer", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('dealer-home');" } },

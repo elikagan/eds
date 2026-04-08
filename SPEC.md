@@ -93,6 +93,15 @@ The designer then customizes this CSS through tickets.
 - Each screen navigated by: setting localStorage for the right user → reloading → running the screen's `eval` string from the project config
 - iframe ID: `eds-app-frame`
 
+### Screen Setup Semantics
+Each screen in the project config has a `setup` object that controls how the iframe is configured:
+- `clearAuth: true` — remove all auth tokens from localStorage before loading. Used for pre-auth screens (landing, onboarding, verify). Mutually exclusive with `user`.
+- `user: "eli"` — set localStorage auth tokens to this user's ID (looked up from the project config's `users` object). The app reads these on load to authenticate.
+- `eval: "..."` — JavaScript executed in the iframe after the page loads. Used to navigate to specific screens, open sheets, scroll to elements, etc.
+- If neither `clearAuth` nor `user` is set, the iframe loads with whatever auth state exists in localStorage (inherit from previous screen).
+
+The user's `role` in the config is informational — EDS doesn't filter screens by role. All screens are always visible in the nav. The role field helps the designer understand which user to assign to which screen.
+
 ### Grid Overlay
 - Toggleable via grid icon button in column header (next to phone toggle)
 - Renders as an absolutely-positioned transparent div overlaying the iframe
@@ -518,7 +527,7 @@ EDS defines a strict contract for what a project repo must have to work with it.
 | Requirement | What | Why |
 |---|---|---|
 | **Project config** | `eds/projects/{name}.json` in the EDS repo | Tells EDS where files are, what screens exist, what theme to use |
-| **Design system CSS** | `design-system.css` in the project root | The single source of truth for all styling. EDS reads and writes this file. |
+| **Design system CSS** | `design-system.css` in the project root (same directory as the app HTML, resolved from `appRoot` in the project config) | The single source of truth for all styling. EDS reads and writes this file. |
 | **Link tag in HTML** | `<link rel="stylesheet" href="design-system.css">` in the app's HTML `<head>`, BEFORE any inline `<style>` blocks | So the DS file loads and inline styles can be gradually migrated out |
 | **Local server** | App served on localhost at a known port | EDS loads the app in an iframe from this URL |
 | **CSS metadata comments** | `@eds-` structured comments in `design-system.css` | EDS parses these to populate the design system panel (Column 2) |
