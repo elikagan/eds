@@ -509,6 +509,27 @@ eds/
 
 ---
 
+## First Run: Onboarding Early Bird
+
+After EDS is built, the first thing it does is onboard Early Bird. This is a defined sequence:
+
+1. **EDS reads `projects/early-bird.json`** — gets the app root, URL, theme, screens, users
+2. **EDS bootstraps `design-system.css`** in the Early Bird repo — generates it from the theme config using M3 tokens. This file starts with foundations (colors, typography, spacing, shape) and skeleton component classes.
+3. **Early Bird's `index.html` gets a `<link>` tag** added: `<link rel="stylesheet" href="design-system.css">`. This is the moment the external design system becomes the source of truth.
+4. **EDS's iframe loads Early Bird** from localhost — the app now renders with the external CSS applied on top of its existing inline styles.
+5. **Migration begins via tickets.** Each ticket moves one component's styling from the inline `<style>` block in `index.html` into `design-system.css`. The inline rule gets deleted, the DS rule takes over. This happens one component at a time, verified visually after each ticket.
+
+The end state: `index.html` has zero styling in its `<style>` block. Everything is in `design-system.css`. Every element uses a component class from the design system.
+
+**Early Bird must be prepared for this.** Its repo needs:
+- A placeholder `design-system.css` file (can be empty or just a comment) so the `<link>` tag doesn't 404
+- The `<link>` tag already in `index.html` pointing to it
+- The `ROADMAP.md`, `QA-NOTES.md`, and `CLAUDE.md` docs that EDS sessions will reference for what to build
+
+See Early Bird's `ROADMAP.md` "Technical Debt" and "Design System" sections for the migration plan.
+
+---
+
 ## Implementation Priority
 
 Multi-project support is DESIGNED IN from the start (all data structures, API calls, and file paths use project config), but the project switcher UI is built last since there's only one project initially. The data model supports it from day one; the dropdown comes later.
