@@ -97,7 +97,13 @@ After Step 1: EDS config has 35 screens with IDs matching the QA tool exactly. E
 - **Implemented:** `loadWatching()` merges favorites + buyer-only conversations by item_id, sorted by most recent activity. Heart icon for favorites, chat bubble for conversations. Price drop badge when previous_price > current price. Empty state with heart + "Nothing yet". Worker updated to include title + previous_price + dealer photo_url in favorites response.
 - **After:** EDS config updated — `messages-buyer` → `watching`, `messages-empty` → `watching-empty`, `messages-populated` → `watching-dealer`. Conversation screens unchanged.
 
-**2c. Item Detail Page States**
+**2c. Item Detail Page States — IN PROGRESS**
+- **Chunk A (API + state detection): DONE** — `GET /api/items/:id` returns `my_conversation` + `is_owner`
+- **Chunk B (State 2 — buyer conversation): DONE** — compact header, inline conversation, reply textarea, router update, Watching tab links
+- **Chunk C (State 3 — dealer, no inquiries): NOT STARTED**
+- **Chunk D (State 4 — dealer, with inquiries): NOT STARTED**
+
+Original spec:
 - **State 1 (Browsing):** Current behavior — full detail, compose buttons. No change needed.
 - **State 2 (Active conversation):** Item compresses to compact header (thumbnail 48px + price + status + dealer name in one row). Expandable chevron to show full item details if needed. Conversation thread becomes main content. Reply input at bottom (iMessage-style auto-expanding, 1 line → 4 max).
 - **State 3 (Dealer, no inquiries):** Full detail + edit button + status controls (Live/Hold/Sold). Market context shown: "Listed in Downtown Modernism · Apr 26".
