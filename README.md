@@ -86,14 +86,28 @@ For Early Bird specifically: JetBrains Mono as the typeface, warm muted palette,
 If a Claude Code session is running, tickets are processed live. If not, they queue for the next session.
 
 ## Tech Stack
-- Single HTML file for the studio UI
-- Node.js local write server (~30 lines)
-- Cloudflare Worker for ticket persistence (can reuse Early Bird's worker)
+- Single HTML file for the studio UI (`studio/index.html`)
+- Node.js server serves app + studio + write endpoint on one port (`studio/server.js`)
+- Ticket persistence: local JSON files committed to git
 - Material Design 3 token system for the design system CSS
-- No build step, no framework, no dependencies beyond the local server
+- No build step, no framework, no npm dependencies. Pure HTML/CSS/JS + Node http module.
 
-## Status
-**Not yet built.** This repo contains the spec and documentation. Implementation begins in a fresh Claude Code session.
+## Status (April 8, 2026)
+**v1 built.** The three-column studio is functional:
+- iPhone 15 frame with Safari chrome, 22-screen navigation with auth switching
+- Ticket creation with scope detection, local JSON persistence, 4 view tabs
+- Screen dot navigation organized by section + DS section nav
+- Rules bar, state persistence (screen, tabs)
+
+**Not yet built:** Design system panel CSS parser, grid overlay, component tooltips, design system bootstrapper, ticket processing loop (Claude executing tickets), project switcher.
+
+See `SPEC.md` "Implementation Status" section for the full breakdown.
+
+## Quick Start
+```bash
+node studio/server.js early-bird 8097
+open http://localhost:8097/eds/
+```
 
 ## Related
-- **Early Bird** — the first project to use EDS. A mobile-first pre-market marketplace for LA flea markets. See the Early Bird repo for `ROADMAP.md` (architecture decisions and unimplemented features) and `QA-NOTES.md` (design feedback).
+- **Early Bird** — the first project to use EDS. A mobile-first pre-market marketplace for LA flea markets. Source: `/Users/elikagan/Desktop/Claude stuff/dealer-exchange/`. See `ROADMAP.md` for architecture decisions and `QA-NOTES.md` for design feedback.

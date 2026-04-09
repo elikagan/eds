@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EDS — Eli Design Studio</title>
+<link rel="stylesheet" href="eds.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ── Top Bar ── -->
+<div class="eds-topbar">
+  <div class="eds-topbar-left">
+    <div class="eds-topbar-title" id="eds-project-name">EDS</div>
+    <span class="eds-topbar-screen" id="eds-screen-label"></span>
+  </div>
+  <div class="eds-topbar-rules">
+    <span>No inline styling</span>
+    <span>Components only</span>
+    <span>8dp grid</span>
+    <span>Tickets required</span>
+  </div>
+  <div class="eds-topbar-nav">
+    <button onclick="navScreen(-1)" id="eds-prev-btn">&#8592; Prev</button>
+    <button onclick="navScreen(1)" id="eds-next-btn">Next &#8594;</button>
+  </div>
+</div>
+
+<!-- Rules moved into topbar -->
+
+<!-- ── Three Columns ── -->
+<div class="eds-main">
+
+  <!-- Column 1: Phone -->
+  <div class="eds-col-1">
+    <div class="eds-tooltip" id="eds-tooltip"></div>
+    <button class="eds-grid-toggle" id="eds-grid-toggle" onclick="toggleGrid()" title="Toggle 4-col + 8dp grid overlay">
+      <svg width="14" height="14" viewBox="0 0 14 14"><rect x="0" y="0" width="3" height="14" fill="currentColor" opacity="0.6"/><rect x="3.67" y="0" width="3" height="14" fill="currentColor" opacity="0.6"/><rect x="7.33" y="0" width="3" height="14" fill="currentColor" opacity="0.6"/><rect x="11" y="0" width="3" height="14" fill="currentColor" opacity="0.6"/></svg>
+    </button>
+    <div class="eds-phone-wrap">
+      <div class="eds-phone">
+        <div class="eds-phone-screen">
+          <!-- Safari Status Bar -->
+          <div class="eds-safari-status">
+            <div class="eds-safari-status-left">9:41</div>
+            <div class="eds-safari-status-right">
+              <svg width="16" height="11" viewBox="0 0 16 11"><path d="M1 7h2v4H1zM5 5h2v6H5zM9 3h2v8H9zM13 1h2v10h-2z" fill="#000"/></svg>
+              <svg width="15" height="11" viewBox="0 0 15 11"><path d="M7.5 3.5a5.5 5.5 0 014.27 2.03l1.06-1.06A7 7 0 007.5 2a7 7 0 00-5.33 2.47l1.06 1.06A5.5 5.5 0 017.5 3.5zm0 3a2.5 2.5 0 012.12 1.18l1.06-1.06A4 4 0 007.5 5a4 4 0 00-3.18 1.62l1.06 1.06A2.5 2.5 0 017.5 6.5zM8.5 9a1 1 0 11-2 0 1 1 0 012 0z" fill="#000"/></svg>
+              <svg width="25" height="11" viewBox="0 0 25 11"><rect x="0" y="0" width="22" height="11" rx="2" fill="none" stroke="#000" stroke-width="1"/><rect x="1.5" y="1.5" width="17" height="8" rx="1" fill="#000"/><rect x="23" y="3" width="2" height="5" rx="1" fill="#000" opacity="0.4"/></svg>
+            </div>
+          </div>
+          <!-- Safari URL Bar -->
+          <div class="eds-safari-url-bar">
+            <div class="eds-safari-url-pill">
+              <span class="lock">&#128274;</span>
+              <span id="eds-safari-url">earlybird.la</span>
+            </div>
+          </div>
+          <!-- App iframe (click to focus for keyboard scrolling) -->
+          <div class="eds-safari-frame">
+            <iframe id="eds-app-frame" src="about:blank" tabindex="0"></iframe>
+            <!-- Grid overlay: 4-col + 8dp baseline -->
+            <div class="eds-grid-overlay eds-hidden" id="eds-grid-overlay">
+              <div class="eds-grid-col"></div>
+              <div class="eds-grid-col"></div>
+              <div class="eds-grid-col"></div>
+              <div class="eds-grid-col"></div>
+            </div>
+          </div>
+          <!-- Safari Bottom Toolbar -->
+          <div class="eds-safari-toolbar">
+            <span>&#9664;</span>
+            <span>&#9654;</span>
+            <span>&#8682;</span>
+            <span>&#9776;</span>
+            <span>&#9633;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Column 2: Design System -->
+  <div class="eds-col-2">
+    <div class="eds-ds-tabs">
+      <button class="eds-ds-tab active" data-tab="foundations">Foundations</button>
+      <button class="eds-ds-tab" data-tab="atoms">Atoms</button>
+      <button class="eds-ds-tab" data-tab="molecules">Molecules</button>
+      <button class="eds-ds-tab" data-tab="organisms">Organisms</button>
+    </div>
+    <div class="eds-ds-content" id="eds-ds-content">
+      <div class="eds-ds-placeholder">
+        <p style="font-size:24px; margin-bottom:16px; opacity:0.2;">&#9649;</p>
+        <p>Design system will be populated from</p>
+        <p style="font-family:'JetBrains Mono',monospace; color:#888;">design-system.css</p>
+        <p style="margin-top:16px; color:#888;">Create the design system via tickets,</p>
+        <p style="color:#888;">then this panel shows all tokens and components.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Column 3: Tickets -->
+  <div class="eds-col-3">
+    <div class="eds-ticket-tabs">
+      <button class="eds-ticket-tab" data-view="screen">This Screen</button>
+      <button class="eds-ticket-tab" data-view="ds">Design System</button>
+      <button class="eds-ticket-tab active" data-view="all">All</button>
+      <button class="eds-ticket-tab" data-view="archive">Archive</button>
+    </div>
+    <div class="eds-ticket-list" id="eds-ticket-list">
+      <div class="eds-ticket-empty" id="eds-ticket-empty">No tickets yet.<br>Write your first instruction below.</div>
+    </div>
+    <div class="eds-ticket-input-wrap">
+      <div class="eds-ticket-input-row">
+        <textarea class="eds-ticket-textarea" id="eds-ticket-input"
+          placeholder="Describe a change... (Cmd+Enter to send)"
+          rows="1"></textarea>
+        <button class="eds-ticket-send" id="eds-ticket-send" onclick="createTicket()">Send</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Bottom Nav ── -->
+<div class="eds-nav">
+  <div class="eds-nav-screens" id="eds-nav"></div>
+  <div class="eds-nav-ds">
+    <span class="eds-nav-section">DS</span>
+    <span class="eds-nav-ds-link" onclick="scrollDS('foundations')">Fnd</span>
+    <span class="eds-nav-ds-link" onclick="scrollDS('atoms')">Atm</span>
+    <span class="eds-nav-ds-link" onclick="scrollDS('molecules')">Mol</span>
+    <span class="eds-nav-ds-link" onclick="scrollDS('organisms')">Org</span>
+  </div>
+</div>
+
+<script>
+// ── State ──
+let CONFIG = null;
+let SCREENS = [];
+let TICKETS = { project: '', nextId: 1, tickets: [] };
+let currentScreenIndex = 0;
+let currentTicketView = 'all'; // 'screen' | 'ds' | 'all' | 'archive'
+const EDS_ROOT = '/Users/elikagan/Desktop/Claude stuff/eds';
+
+// ── Init ──
+async function init() {
+  try {
+    const res = await fetch('/eds/config.json');
+    CONFIG = await res.json();
+  } catch (e) {
+    document.getElementById('eds-project-name').textContent = 'EDS — Config Error';
+    console.error('Failed to load config:', e);
+    return;
+  }
+
+  SCREENS = CONFIG.screens || [];
+  document.getElementById('eds-project-name').innerHTML =
+    `${CONFIG.name} <span>EDS</span>`;
+
+  // Load tickets
+  try {
+    const tRes = await fetch(`/eds/tickets/${CONFIG.name.toLowerCase().replace(/\s+/g, '-')}.json`);
+    if (tRes.ok) TICKETS = await tRes.json();
+  } catch (e) { /* first run, no tickets file yet */ }
+
+  buildNav();
+  setupTicketTabs();
+  setupDSTabs();
+  setupTextarea();
+  restoreGrid();
+  scalePhone();
+  loadDesignSystem(); // also calls setupTooltips after parse
+
+  // Restore last screen or default to 0
+  const saved = localStorage.getItem('eds-active-screen');
+  if (saved !== null) {
+    const idx = SCREENS.findIndex(s => s.id === saved);
+    if (idx >= 0) currentScreenIndex = idx;
+  }
+
+  loadScreen(currentScreenIndex);
+}
+
+// ── Navigation ──
+function buildNav() {
+  const nav = document.getElementById('eds-nav');
+  nav.innerHTML = '';
+  let lastSection = '';
+
+  SCREENS.forEach((s, i) => {
+    if (s.section !== lastSection) {
+      const label = document.createElement('span');
+      label.className = 'eds-nav-section';
+      label.textContent = s.section;
+      nav.appendChild(label);
+      lastSection = s.section;
+    }
+    const dot = document.createElement('div');
+    dot.className = 'eds-nav-dot';
+    dot.title = s.name;
+    dot.onclick = () => goToScreen(i);
+    // Mark dots with tickets
+    const screenTickets = TICKETS.tickets.filter(t => t.screen === s.id);
+    if (screenTickets.length > 0) dot.classList.add('has-tickets');
+    nav.appendChild(dot);
+  });
+}
+
+function goToScreen(i) {
+  if (i < 0 || i >= SCREENS.length) return;
+  currentScreenIndex = i;
+  localStorage.setItem('eds-active-screen', SCREENS[i].id);
+  loadScreen(i);
+}
+
+function navScreen(delta) {
+  goToScreen(currentScreenIndex + delta);
+}
+
+function loadScreen(i) {
+  const s = SCREENS[i];
+
+  // Update top bar
+  document.getElementById('eds-screen-label').innerHTML =
+    `<strong>${i + 1}</strong> of ${SCREENS.length} &mdash; ${s.name}`;
+  document.getElementById('eds-prev-btn').disabled = i === 0;
+  document.getElementById('eds-next-btn').disabled = i === SCREENS.length - 1;
+
+  // Update nav dots
+  const dots = document.querySelectorAll('.eds-nav-dot');
+  dots.forEach((d, j) => {
+    d.classList.toggle('active', j === i);
+  });
+
+  // Update safari URL
+  document.getElementById('eds-safari-url').textContent = 'earlybird.la';
+
+  // Load iframe
+  loadIframe(s);
+
+  // Update ticket view
+  renderTickets();
+}
+
+// ── iframe Loading ──
+function loadIframe(screen) {
+  const iframe = document.getElementById('eds-app-frame');
+  const setup = screen.setup || {};
+  const users = CONFIG.users || {};
+
+  // Set localStorage for auth state BEFORE loading
+  if (setup.clearAuth) {
+    localStorage.removeItem('eb_dealer_id');
+    localStorage.removeItem('eb_token');
+    localStorage.removeItem('eb_active_tab');
+    localStorage.removeItem('eb_current_market');
+  }
+  if (setup.user) {
+    const userObj = users[setup.user];
+    const uid = typeof userObj === 'string' ? userObj : userObj?.id;
+    if (uid) {
+      localStorage.setItem('eb_dealer_id', uid);
+      localStorage.setItem('eb_token', uid);
+    }
+  }
+
+  // Load the app
+  iframe.src = '/';
+
+  iframe.onload = () => {
+    try {
+      const win = iframe.contentWindow;
+      if (setup.eval) {
+        setTimeout(() => {
+          try { win.eval(setup.eval); } catch (e) { console.warn('Screen eval error:', e); }
+        }, 800);
+      }
+    } catch (e) { console.warn('iframe setup error:', e); }
+  };
+}
+
+// ── Tickets ──
+function setupTicketTabs() {
+  // Restore saved view
+  const savedView = localStorage.getItem('eds-ticket-view');
+  if (savedView) {
+    currentTicketView = savedView;
+    document.querySelectorAll('.eds-ticket-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.view === savedView);
+    });
+  }
+
+  document.querySelectorAll('.eds-ticket-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.eds-ticket-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentTicketView = tab.dataset.view;
+      localStorage.setItem('eds-ticket-view', currentTicketView);
+      renderTickets();
+    });
+  });
+}
+
+function renderTickets() {
+  const list = document.getElementById('eds-ticket-list');
+  const empty = document.getElementById('eds-ticket-empty');
+  const screen = SCREENS[currentScreenIndex];
+
+  let filtered;
+  if (currentTicketView === 'screen') {
+    filtered = TICKETS.tickets.filter(t => t.screen === screen?.id);
+  } else if (currentTicketView === 'ds') {
+    filtered = TICKETS.tickets.filter(t => t.scope === 'ds');
+  } else if (currentTicketView === 'archive') {
+    filtered = TICKETS.tickets.filter(t => t.status === 'done');
+  } else {
+    filtered = TICKETS.tickets;
+  }
+
+  // Clear existing cards (keep empty message)
+  list.querySelectorAll('.eds-ticket-card').forEach(el => el.remove());
+
+  if (filtered.length === 0) {
+    empty.classList.remove('eds-hidden');
+    return;
+  }
+  empty.classList.add('eds-hidden');
+
+  // Render newest first — iterate forward, insertBefore firstChild puts each new one on top
+  filtered.forEach(ticket => {
+    list.insertBefore(createTicketCard(ticket), list.firstChild);
+  });
+}
+
+function createTicketCard(ticket) {
+  const card = document.createElement('div');
+  card.className = 'eds-ticket-card' + (ticket.status === 'done' ? ' done' : '');
+
+  const scopeClass = ticket.scope === 'ds' ? 'scope-ds' :
+                     ticket.scope === 'global' ? 'scope-global' : '';
+  const scopeLabel = ticket.scope === 'ds' ? 'DS' :
+                     ticket.scope === 'global' ? 'Global' :
+                     `Screen: ${ticket.screen}`;
+  const statusIcon = ticket.status === 'done' ? '&#10003;' :
+                     ticket.status === 'working' ? '&#128260;' : '&#9203;';
+
+  card.innerHTML = `
+    <div class="eds-ticket-card-header">
+      <div class="eds-ticket-card-meta">
+        <span class="eds-ticket-card-id">#${ticket.id}</span>
+        <span class="eds-ticket-card-scope ${scopeClass}">${scopeLabel}</span>
+        <span>${timeAgo(ticket.createdAt)}</span>
+      </div>
+      <span class="eds-ticket-card-status">${statusIcon}</span>
+    </div>
+    <div class="eds-ticket-card-instruction">${esc(ticket.instruction)}</div>
+    ${ticket.response ? `<div class="eds-ticket-card-response">${esc(ticket.response)}</div>` : ''}
+  `;
+  return card;
+}
+
+async function createTicket() {
+  const input = document.getElementById('eds-ticket-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const screen = SCREENS[currentScreenIndex];
+
+  // Detect scope from text
+  let scope = 'screen';
+  let instruction = text;
+  if (text.startsWith('[DS]')) {
+    scope = 'ds';
+    instruction = text.slice(4).trim();
+  } else if (text.startsWith('[Global]')) {
+    scope = 'global';
+    instruction = text.slice(8).trim();
+  } else if (text.match(/^\[Screen:\s*\w+\]/)) {
+    // Keep as screen scope, strip the tag
+    instruction = text.replace(/^\[Screen:\s*\w+\]\s*/, '');
+  }
+
+  const ticket = {
+    id: TICKETS.nextId++,
+    screen: screen?.id || null,
+    scope,
+    instruction,
+    response: null,
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    completedAt: null,
+  };
+
+  TICKETS.tickets.push(ticket);
+  input.value = '';
+  input.style.height = '38px';
+
+  renderTickets();
+  buildNav(); // Update dot badges
+  await saveTickets();
+}
+
+async function saveTickets() {
+  try {
+    await fetch('/write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        projectRoot: EDS_ROOT,
+        file: `tickets/${CONFIG.name.toLowerCase().replace(/\s+/g, '-')}.json`,
+        content: JSON.stringify(TICKETS, null, 2),
+      }),
+    });
+  } catch (e) {
+    console.error('Failed to save tickets:', e);
+  }
+}
+
+// ── Design System Tabs ──
+function setupDSTabs() {
+  // Restore saved tab
+  const savedTab = localStorage.getItem('eds-ds-tab');
+  if (savedTab) {
+    document.querySelectorAll('.eds-ds-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.tab === savedTab);
+    });
+  }
+
+  document.querySelectorAll('.eds-ds-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.eds-ds-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      localStorage.setItem('eds-ds-tab', tab.dataset.tab);
+      // TODO: filter DS content by tab
+    });
+  });
+}
+
+// ── Textarea Auto-Expand ──
+function setupTextarea() {
+  const ta = document.getElementById('eds-ticket-input');
+  ta.addEventListener('input', () => {
+    ta.style.height = '38px';
+    ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+  });
+  ta.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      createTicket();
+    }
+  });
+}
+
+// ── Design System Parser + Renderer ──
+let DS_DATA = { foundations: [], components: [] };
+
+async function loadDesignSystem() {
+  try {
+    const cssUrl = `/${CONFIG.designSystemCss || 'design-system.css'}`;
+    const res = await fetch(cssUrl);
+    if (!res.ok) { console.warn('No design-system.css found'); return; }
+    const cssText = await res.text();
+
+    // Inject the project's DS CSS into the EDS page so component previews render correctly
+    if (!document.getElementById('eds-project-css')) {
+      const link = document.createElement('link');
+      link.id = 'eds-project-css';
+      link.rel = 'stylesheet';
+      link.href = cssUrl;
+      document.head.appendChild(link);
+    }
+
+    DS_DATA = parseDesignSystem(cssText);
+    renderDesignSystem();
+    setupTooltips();
+  } catch (e) { console.error('Failed to load design system:', e); }
+}
+
+function parseDesignSystem(cssText) {
+  const lines = cssText.split('\n');
+  const foundations = [];
+  const components = [];
+  let currentFoundation = null;
+  let currentComponent = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // Foundation header
+    const foundMatch = line.match(/^\/\*\s*@eds-foundation:\s*(.+?)\s*\*\/$/);
+    if (foundMatch) {
+      currentFoundation = { name: foundMatch[1], tokens: [] };
+      foundations.push(currentFoundation);
+      currentComponent = null;
+      continue;
+    }
+
+    // Token within a foundation
+    const tokenMatch = line.match(/^\/\*\s*@eds-token:\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\*\/$/);
+    if (tokenMatch && currentFoundation) {
+      const token = {
+        name: tokenMatch[1].trim(),
+        description: tokenMatch[2].trim(),
+        usage: tokenMatch[3].trim(),
+        variables: {}
+      };
+      // Scan following lines for CSS custom property declarations
+      for (let j = i + 1; j < Math.min(i + 8, lines.length); j++) {
+        const propMatch = lines[j].trim().match(/^(--[\w-]+):\s*(.+?);$/);
+        if (propMatch) {
+          token.variables[propMatch[1]] = propMatch[2];
+        } else if (lines[j].trim().match(/^\/\*/) || lines[j].trim() === '') {
+          break; // Hit next comment or blank line
+        }
+      }
+      currentFoundation.tokens.push(token);
+      continue;
+    }
+
+    // Component header
+    const compMatch = line.match(/^\/\*\s*@eds-component:\s*(.+?)\s*\*\/$/);
+    if (compMatch) {
+      currentComponent = {
+        fullName: compMatch[1].trim(),
+        category: compMatch[1].split('>')[0]?.trim() || '',
+        name: compMatch[1].split('>')[1]?.trim() || compMatch[1].trim(),
+        className: null,
+        variants: [],
+        states: []
+      };
+      components.push(currentComponent);
+      currentFoundation = null;
+      continue;
+    }
+
+    // Component class
+    const classMatch = line.match(/^\/\*\s*@eds-class:\s*(.+?)\s*\*\/$/);
+    if (classMatch && currentComponent) {
+      currentComponent.className = classMatch[1].trim();
+      continue;
+    }
+
+    // Component variants
+    const varMatch = line.match(/^\/\*\s*@eds-variants:\s*(.+?)\s*\*\/$/);
+    if (varMatch && currentComponent) {
+      currentComponent.variants = varMatch[1].split(',').map(v => v.trim());
+      continue;
+    }
+
+    // Component states
+    const stateMatch = line.match(/^\/\*\s*@eds-states:\s*(.+?)\s*\*\/$/);
+    if (stateMatch && currentComponent) {
+      currentComponent.states = stateMatch[1].split(',').map(s => s.trim());
+      continue;
+    }
+  }
+
+  return { foundations, components };
+}
+
+function renderDesignSystem() {
+  const content = document.getElementById('eds-ds-content');
+  const savedTab = localStorage.getItem('eds-ds-tab') || 'foundations';
+
+  // Build all tab content
+  const tabContent = {
+    foundations: renderFoundations(DS_DATA.foundations),
+    atoms: renderComponents(DS_DATA.components.filter(c =>
+      !c.category.match(/Utility/i)
+    )),
+    molecules: '<div class="eds-ds-placeholder"><p>Molecules will appear here as components are migrated from inline CSS via tickets.</p></div>',
+    organisms: '<div class="eds-ds-placeholder"><p>Organisms will appear here as screen sections are componentized.</p></div>'
+  };
+
+  content.innerHTML = tabContent[savedTab] || tabContent.foundations;
+
+  // Wire tab switching to re-render
+  document.querySelectorAll('.eds-ds-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      content.innerHTML = tabContent[tab.dataset.tab] || '';
+    });
+  });
+}
+
+function renderFoundations(foundations) {
+  if (!foundations.length) return '<div class="eds-ds-placeholder"><p>No foundations found in design-system.css</p></div>';
+  let html = '';
+
+  for (const f of foundations) {
+    html += `<div class="eds-ds-section"><div class="eds-ds-section-title">${esc(f.name)}</div>`;
+
+    if (f.name === 'Colors') {
+      html += renderColorTokens(f.tokens);
+    } else if (f.name === 'Typography') {
+      html += renderTypeTokens(f.tokens);
+    } else if (f.name === 'Spacing') {
+      html += renderSpacingTokens(f.tokens);
+    } else if (f.name === 'Shape') {
+      html += renderShapeTokens(f.tokens);
+    } else if (f.name === 'Elevation') {
+      html += renderElevationTokens(f.tokens);
+    } else if (f.name === 'Grid') {
+      html += renderGridTokens(f.tokens);
+    }
+
+    html += '</div>';
+  }
+  return html;
+}
+
+function renderColorTokens(tokens) {
+  let html = '';
+  for (const t of tokens) {
+    // Get the first variable value (the hex color)
+    const entries = Object.entries(t.variables);
+    const varName = entries[0]?.[0] || '';
+    let value = entries[0]?.[1] || '';
+    // If value is a var() reference, show it as-is
+    const isHex = value.match(/^#[0-9A-Fa-f]{3,8}$/);
+    const swatchColor = isHex ? value : '#ccc';
+
+    html += `<div class="eds-ds-color-row">
+      <div class="eds-ds-color-swatch" style="background:${swatchColor}"></div>
+      <div class="eds-ds-color-info">
+        <div class="eds-ds-color-name">${esc(t.description)}</div>
+        <div class="eds-ds-color-value">${esc(value)}</div>
+        <div class="eds-ds-color-var">${esc(varName)}</div>
+        <div class="eds-ds-color-usage">${esc(t.usage)}</div>
+      </div>
+    </div>`;
+  }
+  return html;
+}
+
+function renderTypeTokens(tokens) {
+  let html = '';
+  for (const t of tokens) {
+    const vars = t.variables;
+    // Find size, weight, line-height from variable names
+    let size = '', weight = '', lh = '';
+    for (const [k, v] of Object.entries(vars)) {
+      if (k.endsWith('-size')) size = v;
+      else if (k.endsWith('-weight')) weight = v;
+      else if (k.endsWith('-lh')) lh = v;
+    }
+    const varPrefix = Object.keys(vars)[0]?.replace(/-size$|-weight$|-lh$/, '') || '';
+
+    html += `<div class="eds-ds-type-row">
+      <div class="eds-ds-type-sample" style="font-family:'JetBrains Mono',monospace;font-size:${size};font-weight:${weight};line-height:${lh}">
+        ${esc(t.description)}
+      </div>
+      <div class="eds-ds-type-meta">
+        <span class="eds-ds-type-size">${esc(size)}</span>
+        <span>JetBrains Mono · ${esc(weight)} · ${esc(lh)} lh</span>
+        <span>${esc(varPrefix)}</span>
+      </div>
+      <div class="eds-ds-color-usage" style="margin-top:2px">${esc(t.usage)}</div>
+    </div>`;
+  }
+  return html;
+}
+
+function renderSpacingTokens(tokens) {
+  let html = '';
+  for (const t of tokens) {
+    const entries = Object.entries(t.variables);
+    const varName = entries[0]?.[0] || '';
+    const value = entries[0]?.[1] || '';
+    const px = parseInt(value) || 0;
+    html += `<div class="eds-ds-spacing-row">
+      <div class="eds-ds-spacing-bar" style="width:${px}px"></div>
+      <div class="eds-ds-spacing-label">${esc(value)} — ${esc(t.description)}</div>
+    </div>`;
+  }
+  return html;
+}
+
+function renderShapeTokens(tokens) {
+  let html = '';
+  for (const t of tokens) {
+    const entries = Object.entries(t.variables);
+    const varName = entries[0]?.[0] || '';
+    const value = entries[0]?.[1] || '';
+    html += `<div class="eds-ds-shape-row">
+      <div class="eds-ds-shape-box" style="border-radius:${value}"></div>
+      <div class="eds-ds-shape-label">${esc(value)} — ${esc(t.description)}</div>
+    </div>`;
+  }
+  return html;
+}
+
+function renderElevationTokens(tokens) {
+  let html = '';
+  for (const t of tokens) {
+    const entries = Object.entries(t.variables);
+    const value = entries[0]?.[1] || 'none';
+    html += `<div class="eds-ds-elevation-row">
+      <div class="eds-ds-elevation-box" style="box-shadow:${value}"></div>
+      <div class="eds-ds-elevation-label">${esc(t.description)} — ${esc(t.usage)}</div>
+    </div>`;
+  }
+  return html;
+}
+
+function renderGridTokens(tokens) {
+  let html = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:12px;color:#555;line-height:1.8">';
+  for (const t of tokens) {
+    const entries = Object.entries(t.variables);
+    const value = entries[0]?.[1] || '';
+    html += `<div>${esc(t.description)}: <strong>${esc(value)}</strong></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderComponents(components) {
+  if (!components.length) return '<div class="eds-ds-placeholder"><p>No atom components found in design-system.css</p></div>';
+  let html = '';
+
+  for (const c of components) {
+    html += `<div class="eds-ds-component">
+      <div class="eds-ds-component-name">${esc(c.fullName)}</div>
+      <div class="eds-ds-component-class">.${esc(c.className || '?')}</div>`;
+
+    // Live preview
+    html += `<div class="eds-ds-component-preview">${renderComponentPreview(c)}</div>`;
+
+    // Metadata
+    html += '<div class="eds-ds-component-meta">';
+    if (c.states.length) html += `<div><strong>States:</strong> ${esc(c.states.join(', '))}</div>`;
+    if (c.variants.length) html += `<div><strong>Variants:</strong> ${c.variants.map(v => '<code>.' + esc(v) + '</code>').join(', ')}</div>`;
+    html += `<div><strong>HTML:</strong> <code>&lt;${getTag(c)} class="${esc(c.className)}"&gt;Label&lt;/${getTag(c)}&gt;</code></div>`;
+    html += '</div></div>';
+  }
+  return html;
+}
+
+function renderComponentPreview(c) {
+  const cls = c.className || '';
+  const tag = getTag(c);
+
+  // Render based on component type
+  if (cls.startsWith('btn-')) {
+    return `<${tag} class="${cls}">Label</${tag}>`;
+  }
+  if (cls === 'fi') {
+    return `<input class="fi" placeholder="Placeholder text" style="max-width:250px" disabled>`;
+  }
+  if (cls === 'fs') {
+    return `<select class="fs" style="max-width:250px" disabled><option>Select option</option></select>`;
+  }
+  if (cls === 'fl') {
+    return `<label class="fl">Form Label</label>`;
+  }
+  if (cls === 'status-pill') {
+    return `<span class="status-pill live">Live</span>
+      <span class="status-pill hold">Hold</span>
+      <span class="status-pill sold">Sold</span>
+      <span class="status-pill upcoming">Upcoming</span>
+      <span class="status-pill deleted">Deleted</span>`;
+  }
+  if (cls === 'fav-btn') {
+    return `<span class="fav-btn">&#9825;</span> <span class="fav-btn fav-active">&#9829;</span>`;
+  }
+  if (cls === 'spinner') {
+    return `<span class="spinner"></span>`;
+  }
+  if (cls === 'back-link') {
+    return `<a class="back-link">&#8592; Back</a>`;
+  }
+  if (cls === 'seg-ctrl') {
+    return `<div class="seg-ctrl"><button class="seg-btn active">All</button><button class="seg-btn">Saved</button></div>`;
+  }
+  if (cls === 'seg-btn') {
+    return `<button class="seg-btn">Inactive</button> <button class="seg-btn active">Active</button>`;
+  }
+  // Default: just show a div with the class
+  return `<div class="${cls}">Sample</div>`;
+}
+
+function getTag(c) {
+  const cls = c.className || '';
+  if (cls.startsWith('btn-') || cls === 'seg-btn') return 'button';
+  if (cls === 'fi') return 'input';
+  if (cls === 'fs') return 'select';
+  if (cls === 'fl') return 'label';
+  if (cls === 'back-link') return 'a';
+  return 'div';
+}
+
+function esc(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+// ── Phone Scrolling ──
+// Intercept wheel events anywhere over Column 1 and forward to iframe content.
+// Also handle click-to-focus for arrow key scrolling.
+document.addEventListener('wheel', (e) => {
+  const col1 = document.querySelector('.eds-col-1');
+  if (!col1) return;
+  const rect = col1.getBoundingClientRect();
+  if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
+  try {
+    const doc = document.getElementById('eds-app-frame').contentDocument;
+    const screen = doc.querySelector('.screen.active');
+    const sOF = screen ? getComputedStyle(screen).overflowY : '';
+    const scrollable = (screen && (sOF === 'auto' || sOF === 'scroll') && screen.scrollHeight > screen.clientHeight)
+      ? screen : (doc.scrollingElement || doc.body);
+    scrollable.scrollTop += e.deltaY;
+    e.preventDefault();
+  } catch (err) { /* cross-origin */ }
+}, { passive: false });
+
+document.addEventListener('keydown', (e) => {
+  if (document.activeElement?.tagName === 'IFRAME' || document.activeElement?.closest?.('.eds-col-1')) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      try {
+        const doc = document.getElementById('eds-app-frame').contentDocument;
+        const screen = doc.querySelector('.screen.active');
+    const sOF = screen ? getComputedStyle(screen).overflowY : '';
+    const scrollable = (screen && (sOF === 'auto' || sOF === 'scroll') && screen.scrollHeight > screen.clientHeight)
+      ? screen : (doc.scrollingElement || doc.body);
+        scrollable.scrollTop += (e.key === 'ArrowDown' ? 80 : -80);
+        e.preventDefault();
+      } catch (err) { /* cross-origin */ }
+    }
+  }
+});
+
+// ── Phone Scaling ──
+function scalePhone() {
+  const col = document.querySelector('.eds-col-1');
+  if (!col) return;
+  const wrap = document.querySelector('.eds-phone-wrap');
+  if (!wrap) return;
+
+  const padding = 32; // 16px top + 16px bottom
+  const availHeight = col.clientHeight - padding;
+  const phoneHeight = 844; // native iPhone 15 height
+  const scale = Math.min(availHeight / phoneHeight, 0.85); // cap at 0.85
+
+  wrap.style.zoom = scale;
+}
+
+window.addEventListener('resize', scalePhone);
+
+// ── Grid Overlay ──
+function toggleGrid() {
+  const overlay = document.getElementById('eds-grid-overlay');
+  const btn = document.getElementById('eds-grid-toggle');
+  const visible = overlay.classList.toggle('eds-hidden');
+  // classList.toggle returns true if class was ADDED (meaning now hidden)
+  btn.classList.toggle('active', !visible);
+  localStorage.setItem('eds-grid-visible', !visible ? 'true' : 'false');
+}
+
+function restoreGrid() {
+  const saved = localStorage.getItem('eds-grid-visible');
+  if (saved === 'true') {
+    document.getElementById('eds-grid-overlay').classList.remove('eds-hidden');
+    document.getElementById('eds-grid-toggle').classList.add('active');
+  }
+}
+
+// ── Component Tooltips ──
+let knownComponents = []; // populated from DS_DATA after parse
+
+function setupTooltips() {
+  // Build lookup from parsed components
+  knownComponents = DS_DATA.components
+    .filter(c => c.className)
+    .map(c => ({ className: c.className, label: c.fullName }));
+
+  const iframe = document.getElementById('eds-app-frame');
+  const tooltip = document.getElementById('eds-tooltip');
+
+  iframe.addEventListener('load', () => {
+    try {
+      const doc = iframe.contentDocument;
+      if (!doc) return;
+
+      doc.addEventListener('mousemove', (e) => {
+        const el = e.target;
+        const match = findComponentMatch(el);
+        if (match) {
+          // Position tooltip relative to Column 1
+          const iframeRect = iframe.getBoundingClientRect();
+          const col1 = document.querySelector('.eds-col-1');
+          const col1Rect = col1.getBoundingClientRect();
+
+          // Scale factor of the phone
+          const scale = 0.68;
+          const x = col1Rect.left + (e.clientX * scale) + (iframeRect.left - col1Rect.left) * scale;
+          const y = col1Rect.top + (e.clientY * scale) + (iframeRect.top - col1Rect.top) * scale - 30;
+
+          tooltip.innerHTML = `<span class="eds-tooltip-category">${esc(match.label)}</span><br>.${esc(match.className)}`;
+          tooltip.style.left = Math.max(4, e.pageX - col1Rect.left - 40) + 'px';
+          tooltip.style.top = Math.max(4, (iframeRect.top - col1Rect.top) + (e.clientY * scale) - 36) + 'px';
+          tooltip.classList.add('visible');
+        } else {
+          tooltip.classList.remove('visible');
+        }
+      });
+
+      doc.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('visible');
+      });
+    } catch (e) { /* cross-origin, skip */ }
+  });
+}
+
+function findComponentMatch(el) {
+  // Walk up from the element, check each one's classes against known components
+  let node = el;
+  while (node && node !== node.ownerDocument?.body) {
+    if (node.classList) {
+      for (const comp of knownComponents) {
+        if (node.classList.contains(comp.className)) {
+          return comp;
+        }
+      }
+    }
+    node = node.parentElement;
+  }
+  return null;
+}
+
+// ── DS Nav (Bottom Bar) ──
+function scrollDS(tab) {
+  // Activate the DS tab
+  document.querySelectorAll('.eds-ds-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+  localStorage.setItem('eds-ds-tab', tab);
+  // TODO: scroll to section when DS content is populated
+}
+
+// ── Keyboard Navigation ──
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'IFRAME') return;
+  if (e.key === 'ArrowLeft') navScreen(-1);
+  if (e.key === 'ArrowRight') navScreen(1);
+});
+
+// ── Helpers ──
+function timeAgo(iso) {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+// ── Boot ──
+init();
+</script>
+</body>
+</html>

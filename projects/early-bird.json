@@ -43,30 +43,255 @@
   },
 
   "screens": [
-    { "id": "landing-buyer", "name": "Landing (Buyer)", "section": "Pre-Auth", "desc": "Marketing page with markets list and sign-up", "setup": { "clearAuth": true, "eval": "showScreen('landing'); loadLanding();" } },
-    { "id": "landing-dealer", "name": "Landing (Dealer)", "section": "Pre-Auth", "desc": "Dealer entry with value prop", "setup": { "clearAuth": true, "eval": "showScreen('dealer-landing')" } },
-    { "id": "onboarding", "name": "Onboarding", "section": "Pre-Auth", "desc": "Photo + name setup", "setup": { "clearAuth": true, "eval": "showScreen('onboarding')" } },
-    { "id": "verify-success", "name": "Verify (Success)", "section": "Pre-Auth", "desc": "Magic link verified", "setup": { "clearAuth": true, "eval": "showScreen('verify'); document.getElementById('verify-status').textContent=\"You're in.\";" } },
-    { "id": "verify-failure", "name": "Verify (Failure)", "section": "Pre-Auth", "desc": "Magic link expired", "setup": { "clearAuth": true, "eval": "showScreen('verify'); document.getElementById('verify-status').textContent='Link expired.'; document.getElementById('verify-status').className='verify-error';" } },
+    {
+      "id": "landing-buyer",
+      "name": "Landing (Buyer)",
+      "section": "Pre-Auth",
+      "desc": "Marketing page with markets, phone input, \"Get Early Access\" CTA",
+      "setup": { "clearAuth": true, "eval": "showScreen('landing'); loadLanding();" }
+    },
+    {
+      "id": "landing-dealer",
+      "name": "Landing (Dealer)",
+      "section": "Pre-Auth",
+      "desc": "Dealer entry: \"Sell to serious buyers\", free badge, how-it-works",
+      "setup": { "clearAuth": true, "eval": "showScreen('dealer-landing')" }
+    },
+    {
+      "id": "onboarding",
+      "name": "Onboarding",
+      "section": "Pre-Auth",
+      "desc": "Selfie upload + name input after first login",
+      "setup": { "clearAuth": true, "eval": "showScreen('onboarding')" }
+    },
+    {
+      "id": "verify-success",
+      "name": "Verify (Success)",
+      "section": "Pre-Auth",
+      "desc": "Magic link verification — success state",
+      "setup": { "clearAuth": true, "eval": "showScreen('verify'); document.getElementById('verify-status').textContent=\"You're in.\";" }
+    },
+    {
+      "id": "verify-failure",
+      "name": "Verify (Failure)",
+      "section": "Pre-Auth",
+      "desc": "Magic link verification — expired/failed with back link",
+      "setup": { "clearAuth": true, "eval": "showScreen('verify'); document.getElementById('verify-status').innerHTML='Link expired.<br><a href=\"#\" onclick=\"event.preventDefault();showScreen(\\'landing\\');\" style=\"color:var(--accent);font-size:13px;margin-top:12px;display:inline-block\">Back to home</a>'; document.getElementById('verify-status').className='verify-error';" }
+    },
 
-    { "id": "feed", "name": "Feed", "section": "Buyer", "desc": "Browse items", "setup": { "user": "loubna", "eval": "switchTab('feed');" } },
-    { "id": "feed-saved", "name": "Feed (Saved)", "section": "Buyer", "desc": "Favorited items", "setup": { "user": "loubna", "eval": "switchTab('feed'); setTimeout(()=>setBrowseMode('saved', document.querySelector('.seg-btn:last-child')), 1000);" } },
-    { "id": "item-detail-live", "name": "Item Detail (Live)", "section": "Buyer", "desc": "Full item with compose", "setup": { "user": "loubna", "eval": "openItem('e12a7cda-23f4-4ad3-b10a-5751c4b4f970');" } },
-    { "id": "item-detail-conversation", "name": "Item Detail (Conversation)", "section": "Buyer", "desc": "Compact header + chat thread", "setup": { "user": "loubna", "eval": "openItem('e12a7cda-23f4-4ad3-b10a-5751c4b4f970');" } },
-    { "id": "item-detail-held", "name": "Item Detail (Held)", "section": "Buyer", "desc": "Item on hold", "setup": { "user": "loubna", "eval": "openItem('6b358975-12f8-416f-a099-f74a5aef3f13');" } },
-    { "id": "item-detail-sold", "name": "Item Detail (Sold)", "section": "Buyer", "desc": "Sold item", "setup": { "user": "loubna", "eval": "openItem('e9968495-4346-4090-91db-39f15f5643cc');" } },
-    { "id": "compose", "name": "Compose", "section": "Buyer", "desc": "Message options chips", "setup": { "user": "marco", "eval": "openItem('e12a7cda-23f4-4ad3-b10a-5751c4b4f970'); setTimeout(()=>document.getElementById('detail-actions')?.scrollIntoView(), 1500);" } },
-    { "id": "watching", "name": "Watching", "section": "Buyer", "desc": "Favorited + inquired items", "setup": { "user": "loubna", "eval": "switchTab('messages');" }, "_note": "Still calls switchTab('messages') because the internal tab ID hasn't been renamed yet in v0.5.1. When the nav is rebuilt, this eval should change to switchTab('watching')." },
-    { "id": "account-buyer", "name": "Account (Buyer)", "section": "Buyer", "desc": "Name + preferences", "setup": { "user": "loubna", "eval": "switchTab('settings');" } },
+    {
+      "id": "feed-populated",
+      "name": "Feed",
+      "section": "Buy",
+      "desc": "Shop tab with items — buyer nav (no Booth tab)",
+      "setup": { "user": "loubna", "eval": "document.body.classList.add('in-app'); switchTab('feed');" }
+    },
+    {
+      "id": "feed-saved-empty",
+      "name": "Feed — Saved (Empty)",
+      "section": "Buy",
+      "desc": "Saved tab, no favorites — empty state with heart icon",
+      "setup": { "user": "loubna", "eval": "document.body.classList.add('in-app'); switchTab('feed'); setTimeout(()=>setBrowseMode('saved', document.querySelector('.seg-btn:last-child')), 1000);" }
+    },
+    {
+      "id": "feed-saved-populated",
+      "name": "Feed — Saved (Has Favorites)",
+      "section": "Buy",
+      "desc": "Saved tab showing favorited items",
+      "setup": { "user": "loubna", "eval": "document.body.classList.add('in-app'); switchTab('feed'); setTimeout(()=>setBrowseMode('saved', document.querySelector('.seg-btn:last-child')), 1000);" }
+    },
+    {
+      "id": "feed-filter-sheet",
+      "name": "Feed — Filter Sheet",
+      "section": "Buy",
+      "desc": "Bottom sheet with category and dealer filters",
+      "setup": { "user": "loubna", "eval": "document.body.classList.add('in-app'); switchTab('feed'); setTimeout(()=>openFilterSheet(), 1000);" }
+    },
+    {
+      "id": "item-detail",
+      "name": "Item Detail (Live)",
+      "section": "Buy",
+      "desc": "Live item — photo, price, seller info, compose area",
+      "setup": { "user": "loubna", "eval": "document.body.classList.add('in-app'); openItem('e12a7cda-23f4-4ad3-b10a-5751c4b4f970');" }
+    },
+    {
+      "id": "item-detail-held",
+      "name": "Item Detail (Held)",
+      "section": "Buy",
+      "desc": "Item on hold — shows held status banner",
+      "setup": { "user": "loubna", "eval": "document.body.classList.add('in-app'); openItem('6b358975-12f8-416f-a099-f74a5aef3f13');" }
+    },
+    {
+      "id": "item-detail-sold",
+      "name": "Item Detail (Sold)",
+      "section": "Buy",
+      "desc": "Sold item — shows sold status banner",
+      "setup": { "user": "loubna", "eval": "document.body.classList.add('in-app'); openItem('e9968495-4346-4090-91db-39f15f5643cc');" }
+    },
+    {
+      "id": "compose",
+      "name": "Compose (I Want This)",
+      "section": "Buy",
+      "desc": "\"I'll take it\", \"Make an offer\", \"Ask a question\" chip buttons",
+      "setup": { "user": "marco", "eval": "document.body.classList.add('in-app'); openItem('e12a7cda-23f4-4ad3-b10a-5751c4b4f970'); setTimeout(()=>document.getElementById('detail-actions')?.scrollIntoView({behavior:'smooth'}), 1500);" }
+    },
+    {
+      "id": "conversation",
+      "name": "Conversation",
+      "section": "Buy",
+      "desc": "Message thread — back link, item context, reply bar",
+      "setup": { "user": "loubna", "eval": "document.body.classList.add('in-app'); loadConversation('ZjWgPaD7');" }
+    },
+    {
+      "id": "watching",
+      "name": "Watching",
+      "section": "Buy",
+      "desc": "Items user has favorited or messaged about — merged list sorted by activity",
+      "setup": { "user": "loubna", "eval": "document.body.classList.add('in-app'); switchTab('messages');" }
+    },
+    {
+      "id": "watching-empty",
+      "name": "Watching (Empty)",
+      "section": "Buy",
+      "desc": "Empty state: no favorites and no conversations",
+      "setup": { "user": "freshDealer", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('messages');" }
+    },
+    {
+      "id": "settings-buyer",
+      "name": "Settings",
+      "section": "Buy",
+      "desc": "Buyer account — no payment fields, no booth settings",
+      "setup": { "user": "loubna", "eval": "document.body.classList.add('in-app'); switchTab('settings');" }
+    },
 
-    { "id": "booth-setup", "name": "Booth (Setup)", "section": "Dealer", "desc": "First time market setup", "setup": { "user": "freshDealer", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('dealer-home');" } },
-    { "id": "booth-active", "name": "Booth (Active)", "section": "Dealer", "desc": "Items with stats and actions", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('dealer-home');" } },
-    { "id": "booth-picker", "name": "Booth (Market Picker)", "section": "Dealer", "desc": "Switch between events", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('dealer-home'); setTimeout(()=>openMarketPicker(), 1500);" } },
-    { "id": "add-item", "name": "Add Item", "section": "Dealer", "desc": "Photo upload + price + details", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); showAddItem();" } },
-    { "id": "my-item", "name": "My Item (Seller View)", "section": "Dealer", "desc": "Own item with inquiry threads", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); openItem('e12a7cda-23f4-4ad3-b10a-5751c4b4f970');" } },
-    { "id": "account-dealer", "name": "Account (Dealer)", "section": "Dealer", "desc": "Name + biz + payment + preferences", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('settings');" } },
+    {
+      "id": "booth-fresh",
+      "name": "Booth — Setup Card",
+      "section": "Sell",
+      "desc": "First time for this market: booth location, payment setup",
+      "setup": { "user": "freshDealer", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('dealer-home');" }
+    },
+    {
+      "id": "booth-empty",
+      "name": "Booth — Empty (Post-Setup)",
+      "section": "Sell",
+      "desc": "Setup done but no items yet — compelling CTA to add items",
+      "setup": { "user": "freshDealer", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('dealer-home'); setTimeout(()=>{ const card=document.getElementById('booth-setup-card'); if(card) card.classList.add('hidden'); document.getElementById('dealer-empty')?.classList.remove('hidden'); }, 1200);" }
+    },
+    {
+      "id": "booth-active",
+      "name": "Booth — With Items",
+      "section": "Sell",
+      "desc": "Items with stats, status pills, action buttons, countdown",
+      "setup": { "user": "eli", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('dealer-home');" }
+    },
+    {
+      "id": "booth-picker",
+      "name": "Booth — Market Picker",
+      "section": "Sell",
+      "desc": "Bottom sheet to switch between markets",
+      "setup": { "user": "eli", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('dealer-home'); setTimeout(()=>openMarketPicker(), 1500);" }
+    },
+    {
+      "id": "add-item",
+      "name": "Add Item",
+      "section": "Sell",
+      "desc": "Photo upload, price, notes, post button",
+      "setup": { "user": "eli", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); showAddItem();" }
+    },
+    {
+      "id": "item-detail-own",
+      "name": "My Item (as Seller)",
+      "section": "Sell",
+      "desc": "Viewing own item — inquiry list, status controls (hold/sold/live)",
+      "setup": { "user": "eli", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); openItem('e12a7cda-23f4-4ad3-b10a-5751c4b4f970');" }
+    },
+    {
+      "id": "conversation-seller",
+      "name": "Conversation (as Seller)",
+      "section": "Sell",
+      "desc": "Message thread as seller — seeing buyer inquiry about your item",
+      "setup": { "user": "eli", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); loadConversation('zaUjFSTf');" }
+    },
+    {
+      "id": "watching-dealer",
+      "name": "Watching (Dealer)",
+      "section": "Sell",
+      "desc": "Dealer's watching tab — items they favorited or messaged about as a buyer",
+      "setup": { "user": "eli", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('messages');" }
+    },
+    {
+      "id": "settings",
+      "name": "Settings",
+      "section": "Sell",
+      "desc": "Avatar, name, biz, payment fields, preferences, logout",
+      "setup": { "user": "eli", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('settings');" }
+    },
 
-    { "id": "feed-dealer", "name": "Feed (as Dealer)", "section": "Dealer as Buyer", "desc": "Browsing with dealer nav", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('feed');" } },
-    { "id": "item-detail-dealer", "name": "Item Detail (as Dealer)", "section": "Dealer as Buyer", "desc": "Another dealer's item with dealer nav", "setup": { "user": "eli", "eval": "document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); openItem('e9968495-4346-4090-91db-39f15f5643cc');" } }
+    {
+      "id": "feed-as-dealer",
+      "name": "Feed",
+      "section": "Seller as Buyer",
+      "desc": "Browsing items — same feed but with dealer nav",
+      "setup": { "user": "eli", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('feed');" }
+    },
+    {
+      "id": "item-detail-as-dealer",
+      "name": "Item Detail",
+      "section": "Seller as Buyer",
+      "desc": "Viewing another dealer's item — buyer view with dealer nav",
+      "setup": { "user": "eli", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); openItem('e9968495-4346-4090-91db-39f15f5643cc');" }
+    },
+
+    {
+      "id": "admin-dashboard",
+      "name": "Admin Dashboard",
+      "section": "Admin",
+      "desc": "Stats, upcoming market, recent activity",
+      "setup": { "eval": "localStorage.setItem('eb_admin_token','early-bird-admin-2026'); showScreen('admin'); location.hash='#/admin';" }
+    },
+    {
+      "id": "admin-markets",
+      "name": "Admin — Markets",
+      "section": "Admin",
+      "desc": "All markets with create form, counts, status",
+      "setup": { "eval": "localStorage.setItem('eb_admin_token','early-bird-admin-2026'); showScreen('admin'); location.hash='#/admin/markets';" }
+    },
+    {
+      "id": "admin-dealers",
+      "name": "Admin — Dealers",
+      "section": "Admin",
+      "desc": "All dealers/buyers with search, role badges, invite form",
+      "setup": { "eval": "localStorage.setItem('eb_admin_token','early-bird-admin-2026'); showScreen('admin'); location.hash='#/admin/dealers';" }
+    },
+    {
+      "id": "admin-items",
+      "name": "Admin — Items",
+      "section": "Admin",
+      "desc": "All items with filters, status, quick actions",
+      "setup": { "eval": "localStorage.setItem('eb_admin_token','early-bird-admin-2026'); showScreen('admin'); location.hash='#/admin/items';" }
+    },
+    {
+      "id": "admin-sms",
+      "name": "Admin — SMS Blast",
+      "section": "Admin",
+      "desc": "Send SMS to buyers/sellers, blast history with delivery stats",
+      "setup": { "eval": "localStorage.setItem('eb_admin_token','early-bird-admin-2026'); showScreen('admin'); location.hash='#/admin/sms';" }
+    },
+
+    {
+      "id": "loading",
+      "name": "Loading State",
+      "section": "States",
+      "desc": "Spinner shown while data loads",
+      "setup": { "user": "eli", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('feed'); setTimeout(()=>{document.getElementById('feed-content').innerHTML='<div class=\"loading-center\"><span class=\"spinner\"></span></div>';}, 500);" }
+    },
+    {
+      "id": "error",
+      "name": "Error State",
+      "section": "States",
+      "desc": "Error with retry button",
+      "setup": { "user": "eli", "eval": "document.body.classList.add('in-app'); document.querySelectorAll('.nav-dealer-only').forEach(el=>el.classList.remove('hidden')); switchTab('feed'); setTimeout(()=>{document.getElementById('feed-content').innerHTML='<div class=\"state-error\"><div class=\"state-error-msg\">Could not load items</div><button class=\"btn-secondary\" onclick=\"loadFeed()\">Try again</button></div>';}, 500);" }
+    }
   ]
 }

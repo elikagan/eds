@@ -78,14 +78,18 @@ The designer then customizes this CSS through tickets.
 - Home indicator: 140x5px centered bar at bottom
 - Frame color: #000 with subtle #333 outer border
 - Content area: ~362x770px after frame padding and notch clearance
-- Scaled via CSS transform to fit column height (typically 0.7-0.85x depending on viewport)
+- Scaled dynamically via JS (`scalePhone()`) to maximize size within available height. Scale = `min(availableHeight / 844, 0.85)`. Recalculates on window resize. Column 1 is 420px wide to accommodate the larger phone.
 
-### Phone Toggle
-- Eye icon button in column header (top-right)
-- Toggles the iPhone silhouette on/off
-- When OFF: iframe renders at full column width, no frame, no notch, no home indicator
-- When OFF: content scrolls naturally — useful for long pages
-- Toggle state persists in localStorage
+### Safari Chrome (No Toggle)
+The phone frame always includes dummied Safari browser chrome for realistic viewport representation. This is critical because real users see the app through Safari — designing without it means designing for space that doesn't exist.
+
+Safari chrome elements (all static CSS, not functional):
+- **Status bar** (54px): time "9:41", signal bars (SVG), wifi icon (SVG), battery indicator (SVG)
+- **URL bar** (36px): pill-shaped with lock icon + domain name
+- **Bottom toolbar** (44px): back, forward, share, bookmarks, tabs icons
+- **Home indicator**: 140x5px bar (part of the phone frame's `::after`)
+
+The usable content viewport after Safari chrome is approximately 362x628px at native scale (before CSS transform scaling).
 
 ### iframe
 - Loads from project's `appUrl` (localhost during development, same origin)
@@ -270,6 +274,24 @@ Rules:
 
 This comment-based metadata system keeps the CSS as the source of truth while giving EDS enough information to build the panel.
 
+**Parser Implementation (DONE):**
+The parser (`parseDesignSystem()` in `studio/index.html`) scans the CSS line by line:
+1. `/* @eds-foundation: X */` → starts a new foundation section
+2. `/* @eds-token: name | description | usage */` → extracts token, then scans following lines for `--var: value;` declarations
+3. `/* @eds-component: Category > Name */` → starts a new component
+4. `/* @eds-class: X */`, `/* @eds-variants: X */`, `/* @eds-states: X */` → attached to current component
+
+The renderer displays:
+- **Colors:** swatch + hex + variable name + usage
+- **Typography:** sample text rendered in actual font/size/weight + metadata
+- **Spacing:** proportional bars
+- **Shape:** rounded rectangles at each radius
+- **Elevation:** shadow preview boxes
+- **Grid:** simple value listing
+- **Components (Atoms tab):** live rendered previews using the project's actual CSS (loaded via `<link>` into the EDS page), plus states, variants, and HTML snippets
+
+The project's `design-system.css` is loaded into the EDS page as a `<link>` tag so component previews render with actual project styles. No conflicts because EDS classes use the `eds-` prefix.
+
 ---
 
 ## Column 3: Tickets / Chat
@@ -402,14 +424,13 @@ Displayed permanently in the EDS UI as a thin rules bar between the top bar and 
 ## State Persistence
 
 When EDS is closed and reopened:
-- **Active screen:** Restored from localStorage (`eds-active-screen`)
-- **Column widths:** Restored from localStorage (`eds-col-widths`)
-- **Phone toggle state:** Restored from localStorage (`eds-phone-visible`)
-- **Grid toggle state:** Restored from localStorage (`eds-grid-visible`)
-- **Active DS tab:** Restored from localStorage (`eds-ds-tab`)
-- **Ticket view tab:** Restored from localStorage (`eds-ticket-view`)
-- **Active project:** Restored from localStorage (`eds-active-project`)
-- **Pending tickets:** Persisted in API (Supabase), always available
+- **Active screen:** Restored from localStorage (`eds-active-screen`) — IMPLEMENTED
+- **Active DS tab:** Restored from localStorage (`eds-ds-tab`) — IMPLEMENTED
+- **Ticket view tab:** Restored from localStorage (`eds-ticket-view`) — IMPLEMENTED
+- **Pending tickets:** Persisted in local JSON file, committed to git — IMPLEMENTED
+- **Column widths:** Restored from localStorage (`eds-col-widths`) — DEFERRED (columns not resizable yet)
+- **Grid toggle state:** Restored from localStorage (`eds-grid-visible`) — DEFERRED (grid not built yet)
+- **Active project:** Restored from localStorage (`eds-active-project`) — DEFERRED (only one project)
 
 ---
 
@@ -417,75 +438,82 @@ When EDS is closed and reopened:
 
 ### Architecture
 ```
-localhost:[project-port]    →  Ruby/Python httpd serving the app files
-localhost:8097              →  Node.js write server (shared across projects)
-localhost:[project-port]/   →  App loads index.html + design-system.css from here
+localhost:8097/        →  App files (served from project's appRoot)
+localhost:8097/eds/    →  EDS studio (served from eds/studio/)
+localhost:8097/write   →  POST endpoint for file writes
 ```
 
-EDS studio itself is opened directly as a file (`open eds/studio/index.html`) or served from its own port. Since the iframe points to the project's localhost, it's same-origin with the app but not necessarily with the studio. For localStorage access to work, the studio should be served from the same port as the app (e.g., `localhost:8094/eds/` for Early Bird).
+**One Node server handles everything.** It serves both the app and EDS from the same port, giving same-origin localStorage access (needed for user-switching across screens). No Ruby WEBrick, no separate processes.
+
+Usage: `node studio/server.js [project-name] [port]`
 
 ### Write Server (`studio/server.js`)
-Shared across all projects. The project root path comes from the POST request body.
+The server does three things:
+1. **Serves app files** from the project's `appRoot` directory
+2. **Serves EDS studio** from the `studio/` directory under `/eds/`
+3. **Writes files** via `POST /write` — accepts `{ projectRoot, file, content }`
 
-```javascript
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+Write safety:
+- Only allows `.css`, `.html`, and `.json` files
+- Validates resolved paths are within the project root or EDS root (no path traversal)
+- Logs every write to console with timestamp
+- `Cache-Control: no-cache` on all served files for instant reload
 
-const ALLOWED_EXTENSIONS = ['.css', '.html', '.json'];
+### Ticket Persistence (Local JSON)
+Tickets are stored as JSON files in `eds/tickets/`, one per project:
 
-http.createServer((req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
-
-  if (req.method === 'POST' && req.url === '/write') {
-    let body = '';
-    req.on('data', chunk => body += chunk);
-    req.on('end', () => {
-      try {
-        const { projectRoot, file, content } = JSON.parse(body);
-        const ext = path.extname(file);
-        if (!ALLOWED_EXTENSIONS.includes(ext)) {
-          res.writeHead(403); res.end('File type not allowed'); return;
-        }
-        // Prevent path traversal
-        const resolved = path.resolve(projectRoot, file);
-        if (!resolved.startsWith(path.resolve(projectRoot))) {
-          res.writeHead(403); res.end('Path traversal denied'); return;
-        }
-        fs.writeFileSync(resolved, content, 'utf8');
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ ok: true, file: resolved }));
-      } catch (e) {
-        res.writeHead(500); res.end(e.message);
-      }
-    });
-  } else {
-    res.writeHead(404); res.end('Not found');
-  }
-}).listen(8097, () => console.log('EDS write server on :8097'));
+```json
+{
+  "project": "early-bird",
+  "nextId": 2,
+  "tickets": [
+    {
+      "id": 1,
+      "screen": "feed",
+      "scope": "ds",
+      "instruction": "Set primary color to #0066FF",
+      "response": null,
+      "status": "pending",
+      "createdAt": "2026-04-08T12:00:00Z",
+      "completedAt": null
+    }
+  ]
+}
 ```
 
-### Ticket API
-Reuses the Cloudflare Worker infrastructure. New Supabase table:
+The EDS UI reads tickets via `GET /eds/tickets/early-bird.json` and writes via `POST /write` with `projectRoot` set to the EDS directory.
 
-```sql
-CREATE TABLE eds_tickets (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  project TEXT NOT NULL,
-  screen TEXT,
-  scope TEXT DEFAULT 'screen',
-  instruction TEXT NOT NULL,
-  response TEXT,
-  status TEXT DEFAULT 'pending',
-  created_at TIMESTAMPTZ DEFAULT now(),
-  completed_at TIMESTAMPTZ
-);
-CREATE INDEX idx_eds_tickets_project ON eds_tickets(project, created_at DESC);
-CREATE INDEX idx_eds_tickets_status ON eds_tickets(status);
-```
+**No Supabase, no Cloudflare Worker for tickets.** Git is the persistence layer — every completed ticket triggers a commit and push in the Claude Code session.
+
+### Git Workflow
+Git commit+push happens after every completed ticket. This is handled by the Claude Code session processing the ticket, NOT by the write server. The write server is a dumb pipe — it writes bytes to files, nothing more.
+
+This means:
+- Every change is on GitHub within seconds of completion
+- If a session crashes, `git pull` recovers to the last completed ticket
+- Git history mirrors ticket history exactly
+- Commit message format: `EDS #14: [description from ticket response]`
+
+---
+
+## Claude Code ↔ EDS Contract
+
+EDS and Claude Code have distinct responsibilities connected by two shared files:
+
+### `design-system.css` — The Styling Contract
+- **EDS** creates and maintains this file. All tokens, components, and styling live here with `@eds-` metadata comments.
+- **Claude Code** reads this file to know what components exist. When building a screen, it uses only classes defined here.
+- **If Claude Code needs a component that doesn't exist**, it creates an EDS ticket — never writes inline styles or ad-hoc classes.
+
+### `eds/projects/{name}.json` — The Screen Contract
+- **Claude Code** updates this file when it creates or restructures a screen. Each screen entry has `id`, `name`, `section`, `desc`, and `setup` (auth + eval).
+- **EDS** reads this file on load to populate the screen navigation and iframe setup.
+- The `desc` field is the screen's outline — a plain-language description of what's on it.
+
+### Structure vs Style
+- **Claude Code** builds app structure: new screens, new features, HTML layout, API endpoints.
+- **EDS** designs and styles: tokens, components, visual refinement, spacing, typography.
+- EDS does NOT create app structure. Screen structure comes from Claude Code sessions.
 
 ---
 
@@ -510,10 +538,12 @@ eds/
   CLAUDE.md                — rules for building EDS itself
   studio/
     index.html             — the three-column studio UI
-    server.js              — local write server (Node.js)
+    server.js              — Node server (serves app + studio + write endpoint)
     eds.css                — EDS's own styling (dark theme)
   projects/
     early-bird.json        — project config for Early Bird
+  tickets/
+    early-bird.json        — ticket data for Early Bird (persisted via git)
 ```
 
 ---
@@ -587,13 +617,60 @@ End state: `index.html` has zero inline styling. Everything in `design-system.cs
 
 Multi-project support is DESIGNED IN from the start (all data structures, API calls, and file paths use project config), but the project switcher UI is built last since there's only one project initially. The data model supports it from day one; the dropdown comes later.
 
-1. **Project config + write server** — `projects/early-bird.json` + `server.js`. Define the data model and test file writing standalone.
-2. **Column 1 (UI Display)** — iPhone frame + iframe loading from project's `appUrl` + phone toggle. No grid or tooltips yet.
-3. **Column 3 (Tickets)** — Input, card creation, API persistence. The core interaction loop.
-4. **Ticket processing loop** — Claude reads pending tickets via `GET /api/eds/tickets?status=pending`. In live mode: a `CronCreate` job in Claude Code polls every 10-15 seconds. In async mode: user says "process tickets" and Claude reads + processes all pending.
-5. **Column 2 (Design System)** — Start with foundations only (colors + typography). Parse from CSS `@eds-` comments.
-6. **Bottom Nav** — Screen navigation dots from project config. DS section nav.
-7. **Grid overlay** — 4-column + 8dp baseline on Column 1.
-8. **Component tooltips** — Hover labels from iframe DOM scan.
-9. **Design system bootstrapper** — Generate starter `design-system.css` from project theme config.
-10. **Project switcher UI** — Dropdown in top bar. Last because only one project exists initially.
+1. ~~**Project config + write server**~~ — **DONE.** Single Node server serves app + EDS + write endpoint.
+2. ~~**Column 1 (UI Display)**~~ — **DONE.** iPhone frame + Safari chrome + iframe. No toggle — Safari view only.
+3. ~~**Column 3 (Tickets)**~~ — **DONE.** Input, card creation, local JSON persistence, 4 view tabs.
+4. **Ticket processing loop** — NOT YET BUILT. Claude reads pending tickets and processes them. Two modes: live (cron poll) and async ("process tickets" command).
+5. ~~**Column 2 (Design System)**~~ — **DONE.** CSS parser extracts 52 tokens across 6 foundations + 17 components. Live rendering with project CSS.
+6. ~~**Bottom Nav**~~ — **DONE.** Screen dots by section + DS section nav (Fnd/Atm/Mol/Org) on right.
+7. ~~**Grid overlay**~~ — **DONE.** 4-column + 8dp baseline on Column 1 (toggleable). 8dp baseline always-on in Column 2.
+8. ~~**Component tooltips**~~ — **DONE.** Hover over iframe elements shows class name + category. 17 components registered.
+9. **Design system bootstrapper** — NOT YET BUILT. Extract Early Bird's existing inline CSS into `design-system.css` with M3 structure and `@eds-` metadata.
+10. **Project switcher UI** — NOT YET BUILT. Dropdown in top bar. Last because only one project exists.
+
+---
+
+## Implementation Status (v1 — April 8, 2026)
+
+### What's Built
+| Feature | Status | Notes |
+|---|---|---|
+| Node server (`studio/server.js`) | **DONE** | Serves app + studio + write endpoint on one port |
+| iPhone 15 frame + Safari chrome | **DONE** | Status bar, URL bar, bottom toolbar. Safari view only, no toggle. |
+| iframe with auth switching | **DONE** | clearAuth, user lookup, eval — all working across 22 screens |
+| Ticket creation | **DONE** | Scope detection ([DS], [Global], per-screen), auto-numbering |
+| Ticket persistence | **DONE** | Local JSON files (`tickets/early-bird.json`), written via write server |
+| Ticket view tabs | **DONE** | This Screen, Design System, All, Archive — with localStorage persistence |
+| Screen dot navigation | **DONE** | 35 screens across 6 sections (Pre-Auth, Buyer, Dealer, Dealer as Buyer, Admin, States). Matches QA tool exactly. |
+| DS section nav in bottom bar | **DONE** | Fnd / Atm / Mol / Org links on right side |
+| Grid overlay (Column 1) | **DONE** | 4-col + 8dp baseline, toggle button, localStorage persistence |
+| Grid baseline (Column 2) | **DONE** | 8dp baseline always visible at 3% opacity |
+| Component tooltips | **DONE** | Hover iframe elements → class name + category. 17 components registered. |
+| Rules bar | **DONE** | 4 rules displayed in topbar (moved from own row to maximize phone height) |
+| Phone dynamic scaling | **DONE** | Scale calculated from viewport height, capped at 0.85, recalculates on resize |
+| Phone scrolling | **DONE** | Wheel events forwarded to iframe content. Smart target detection: uses `.screen.active` if it has overflow scroll, otherwise `document.scrollingElement`. Works on both landing pages and list screens. |
+| Top bar | **DONE** | Project name, screen counter, Prev/Next buttons |
+| State persistence | **DONE** | Active screen, DS tab, ticket view tab — all in localStorage |
+| Design system panel + CSS parser | **DONE** | Parses `@eds-` comments, renders foundations (colors/type/spacing/shape/elevation/grid) + atoms (live component previews) |
+
+### What Changed from Original Spec
+| Original Spec | Decision | Why |
+|---|---|---|
+| Separate Ruby server + Node write server | **Single Node server** | Ruby WEBrick was flaky. One process, same origin, stable. |
+| Supabase + Cloudflare Worker for tickets | **Local JSON + git** | Simpler. Git is the persistence layer — commit after every ticket. |
+| Phone toggle (3 modes) | **Safari view only** | User wanted heightened realism. No toggle needed. |
+| Column resize handles | **Deferred** | Not critical for v1. Fixed column widths work. |
+| Ticket API (REST endpoints) | **Local file read/write** | No remote infrastructure needed yet. JSON file is the store. |
+| EDS on same port as app (8094) | **EDS on port 8097** | Avoids conflict with existing Early Bird Ruby server. Same-origin still works on 8097. |
+
+### What's Deferred
+| Feature | Priority | Depends On |
+|---|---|---|
+| Ticket processing loop | #4 | Tickets (done) |
+| DS panel CSS parser | #5 | `design-system.css` existing |
+| ~~Grid overlay~~ | ~~#7~~ | **DONE** |
+| ~~Component tooltips~~ | ~~#8~~ | **DONE** |
+| DS bootstrapper | #9 | CSS parser (#5) |
+| Project switcher | #10 | — |
+| Column resize handles | — | Nice to have |
+| Validation checks on load | — | DS bootstrapper (#9) |

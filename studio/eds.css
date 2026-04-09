@@ -1,0 +1,426 @@
+/* EDS — Eli Design Studio
+   Dark theme, all classes prefixed eds- to avoid collision with project CSS */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: #1a1a1a; color: #e0e0e0;
+  height: 100vh; overflow: hidden;
+}
+
+/* ── Top Bar ── */
+.eds-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; background: #222; border-bottom: 1px solid #333;
+  height: 48px; flex-shrink: 0;
+}
+.eds-topbar-left { display: flex; align-items: center; gap: 16px; }
+.eds-topbar-title { font-weight: 700; font-size: 13px; letter-spacing: 0.05em; }
+.eds-topbar-title span { color: #0066FF; }
+.eds-topbar-screen {
+  font-size: 12px; color: #888;
+}
+.eds-topbar-screen strong { color: #e0e0e0; }
+.eds-topbar-nav { display: flex; align-items: center; gap: 6px; }
+.eds-topbar-nav button {
+  background: #333; border: 1px solid #444; color: #ccc; border-radius: 4px;
+  padding: 5px 12px; font-size: 11px; cursor: pointer; transition: background 0.15s;
+}
+.eds-topbar-nav button:hover { background: #444; color: #fff; }
+.eds-topbar-nav button:disabled { opacity: 0.3; cursor: default; }
+
+/* ── Rules (in topbar) ── */
+.eds-topbar-rules {
+  display: flex; align-items: center; gap: 16px;
+  font-size: 10px; color: #555; letter-spacing: 0.02em;
+}
+.eds-topbar-rules span { white-space: nowrap; }
+
+/* ── Main Layout ── */
+.eds-main {
+  display: flex;
+  height: calc(100vh - 48px - 40px); /* topbar + nav */
+}
+
+/* ── Column 1: Phone ── */
+.eds-col-1 {
+  flex: 0 0 420px; display: flex; align-items: flex-start; justify-content: center;
+  padding: 16px 8px; overflow: hidden; background: #1a1a1a;
+  position: relative;
+}
+
+/* ── Column 2: Design System ── */
+.eds-col-2 {
+  flex: 1; min-width: 300px; border-left: 1px solid #2a2a2a; border-right: 1px solid #2a2a2a;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.eds-ds-tabs {
+  display: flex; border-bottom: 1px solid #2a2a2a; flex-shrink: 0;
+}
+.eds-ds-tab {
+  flex: 1; padding: 10px 12px; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em; color: #666;
+  background: none; border: none; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: color 0.15s;
+}
+.eds-ds-tab:hover { color: #aaa; }
+.eds-ds-tab.active { color: #e0e0e0; border-bottom-color: #0066FF; }
+.eds-ds-content {
+  flex: 1; overflow-y: auto; padding: 20px;
+  background: #FAFAF8; /* Matches project surface — components render on the same bg they'll appear on */
+}
+.eds-ds-placeholder {
+  color: #999; font-size: 13px; text-align: center; padding-top: 80px;
+}
+.eds-ds-placeholder p { margin-bottom: 8px; }
+
+/* DS Panel Content */
+.eds-ds-section { margin-bottom: 32px; }
+.eds-ds-section-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #888; margin-bottom: 16px;
+  padding-bottom: 8px; border-bottom: 1px solid #ddd;
+}
+
+/* Color Tokens */
+.eds-ds-color-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  margin-bottom: 16px;
+}
+.eds-ds-color-swatch {
+  width: 48px; height: 48px; border-radius: 6px; flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+.eds-ds-color-info { flex: 1; min-width: 0; }
+.eds-ds-color-name {
+  font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 2px;
+}
+.eds-ds-color-value {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #555;
+}
+.eds-ds-color-var {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #888;
+}
+.eds-ds-color-usage {
+  font-size: 11px; color: #888; margin-top: 2px;
+}
+
+/* Typography Tokens */
+.eds-ds-type-row { margin-bottom: 20px; }
+.eds-ds-type-sample { margin-bottom: 4px; color: #1a1a1a; }
+.eds-ds-type-meta {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+}
+.eds-ds-type-meta span {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #888;
+}
+.eds-ds-type-size {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: #555; font-weight: 600;
+}
+
+/* Spacing Tokens */
+.eds-ds-spacing-row {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+.eds-ds-spacing-bar {
+  height: 12px; background: #0066FF; border-radius: 2px; opacity: 0.2;
+}
+.eds-ds-spacing-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #555;
+  white-space: nowrap;
+}
+
+/* Shape Tokens */
+.eds-ds-shape-row {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+.eds-ds-shape-box {
+  width: 48px; height: 32px; border: 2px solid #0066FF; opacity: 0.4;
+}
+.eds-ds-shape-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #555;
+}
+
+/* Elevation Tokens */
+.eds-ds-elevation-row {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 14px;
+}
+.eds-ds-elevation-box {
+  width: 64px; height: 40px; background: #fff; border-radius: 8px;
+}
+.eds-ds-elevation-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #555;
+}
+
+/* Component Cards */
+.eds-ds-component {
+  background: #fff; border: 1px solid #e0e0e0; border-radius: 8px;
+  padding: 16px; margin-bottom: 16px;
+}
+.eds-ds-component-name {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #888; margin-bottom: 4px;
+}
+.eds-ds-component-class {
+  font-family: 'JetBrains Mono', monospace; font-size: 14px;
+  font-weight: 600; color: #1a1a1a; margin-bottom: 12px;
+}
+.eds-ds-component-preview {
+  padding: 16px; background: #FAFAF8; border-radius: 6px;
+  border: 1px solid #eee; margin-bottom: 12px;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.eds-ds-component-meta {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #888;
+  line-height: 1.6;
+}
+.eds-ds-component-meta strong { color: #555; font-weight: 600; }
+
+/* ── Column 3: Tickets ── */
+.eds-col-3 {
+  flex: 0 0 400px; display: flex; flex-direction: column; overflow: hidden;
+}
+.eds-ticket-tabs {
+  display: flex; border-bottom: 1px solid #2a2a2a; flex-shrink: 0;
+}
+.eds-ticket-tab {
+  padding: 10px 14px; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em; color: #666;
+  background: none; border: none; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: color 0.15s;
+}
+.eds-ticket-tab:hover { color: #aaa; }
+.eds-ticket-tab.active { color: #e0e0e0; border-bottom-color: #0066FF; }
+
+/* Ticket List */
+.eds-ticket-list {
+  flex: 1; overflow-y: auto; padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.eds-ticket-empty {
+  color: #444; font-size: 12px; text-align: center; padding-top: 40px;
+}
+
+/* Ticket Card */
+.eds-ticket-card {
+  background: #242424; border: 1px solid #2e2e2e; border-radius: 8px;
+  padding: 12px; transition: border-color 0.15s;
+}
+.eds-ticket-card:hover { border-color: #3a3a3a; }
+.eds-ticket-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.eds-ticket-card-meta {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: #888;
+}
+.eds-ticket-card-id { font-weight: 700; color: #bbb; }
+.eds-ticket-card-scope {
+  background: #2a2a3a; color: #8888cc; padding: 2px 6px;
+  border-radius: 3px; font-size: 10px; font-weight: 600;
+}
+.eds-ticket-card-scope.scope-ds { background: #2a3a2a; color: #88cc88; }
+.eds-ticket-card-scope.scope-global { background: #3a2a2a; color: #cc8888; }
+.eds-ticket-card-status { font-size: 14px; }
+.eds-ticket-card-instruction {
+  font-size: 13px; color: #ccc; line-height: 1.5;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+.eds-ticket-card-response {
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px dashed #333;
+  font-size: 12px; color: #888; line-height: 1.5;
+}
+.eds-ticket-card.done { opacity: 0.7; }
+.eds-ticket-card.done .eds-ticket-card-instruction { color: #888; }
+
+/* Ticket Input */
+.eds-ticket-input-wrap {
+  padding: 12px; border-top: 1px solid #2a2a2a; flex-shrink: 0;
+  background: #1e1e1e;
+}
+.eds-ticket-input-row {
+  display: flex; gap: 8px; align-items: flex-end;
+}
+.eds-ticket-textarea {
+  flex: 1; background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 8px;
+  padding: 10px 12px; color: #e0e0e0; font-size: 13px;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  line-height: 1.4; resize: none; outline: none;
+  min-height: 38px; max-height: 120px;
+  transition: border-color 0.15s;
+}
+.eds-ticket-textarea:focus { border-color: #0066FF; }
+.eds-ticket-textarea::placeholder { color: #555; }
+.eds-ticket-send {
+  background: #0066FF; color: #fff; border: none; border-radius: 8px;
+  padding: 10px 16px; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+  white-space: nowrap; height: 38px;
+}
+.eds-ticket-send:hover { background: #0052CC; }
+.eds-ticket-send:disabled { opacity: 0.4; cursor: default; }
+
+/* ── iPhone Frame ── */
+.eds-phone-wrap {
+  /* Scale set dynamically by scalePhone() in JS using zoom (not transform)
+     so that mouse/wheel/keyboard events route correctly to the iframe */
+}
+.eds-phone {
+  width: 390px; height: 844px; background: #000; border-radius: 50px;
+  padding: 14px; position: relative;
+  box-shadow: 0 0 0 2px #333, 0 20px 60px rgba(0,0,0,0.5);
+}
+.eds-phone-screen {
+  width: 100%; height: 100%; border-radius: 38px; overflow: hidden;
+  background: #fff; display: flex; flex-direction: column;
+  position: relative;
+}
+/* Dynamic Island */
+.eds-phone::before {
+  content: ''; position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+  width: 126px; height: 36px; background: #000; border-radius: 20px; z-index: 10;
+}
+/* Home Indicator */
+.eds-phone::after {
+  content: ''; position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+  width: 140px; height: 5px; background: #333; border-radius: 3px; z-index: 10;
+}
+
+/* ── Safari Chrome ── */
+.eds-safari-status {
+  height: 54px; background: #f8f8f8; display: flex;
+  align-items: flex-end; justify-content: space-between;
+  padding: 0 20px 6px; font-size: 12px; font-weight: 600; color: #000;
+  flex-shrink: 0;
+}
+.eds-safari-status-left { display: flex; align-items: center; gap: 4px; }
+.eds-safari-status-right { display: flex; align-items: center; gap: 5px; font-size: 11px; }
+
+.eds-safari-url-bar {
+  height: 36px; background: #f8f8f8; display: flex;
+  align-items: center; justify-content: center;
+  padding: 0 16px; flex-shrink: 0;
+}
+.eds-safari-url-pill {
+  background: #e8e8ed; border-radius: 10px; padding: 6px 14px;
+  font-size: 12px; color: #555; display: flex; align-items: center; gap: 4px;
+  width: 100%;  justify-content: center;
+}
+.eds-safari-url-pill .lock { font-size: 10px; }
+
+.eds-safari-frame {
+  flex: 1; overflow: hidden;
+}
+.eds-safari-frame iframe {
+  width: 100%; height: 100%; border: none;
+}
+
+.eds-safari-toolbar {
+  height: 44px; background: #f8f8f8; border-top: 1px solid #ddd;
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 0 20px; flex-shrink: 0;
+  font-size: 18px; color: #007AFF;
+}
+.eds-safari-toolbar span {
+  cursor: default; opacity: 0.5;
+}
+
+/* ── Bottom Nav ── */
+.eds-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; background: #222; border-top: 1px solid #333;
+  height: 40px; flex-shrink: 0; z-index: 100;
+}
+.eds-nav-screens {
+  display: flex; align-items: center; gap: 5px;
+}
+.eds-nav-ds {
+  display: flex; align-items: center; gap: 8px; margin-left: 16px;
+}
+.eds-nav-ds-link {
+  font-size: 10px; color: #666; cursor: pointer; transition: color 0.15s;
+  letter-spacing: 0.02em;
+}
+.eds-nav-ds-link:hover { color: #0066FF; }
+.eds-nav-section {
+  font-size: 9px; color: #555; text-transform: uppercase;
+  letter-spacing: 0.1em; margin: 0 4px; white-space: nowrap;
+}
+.eds-nav-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #444;
+  cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+}
+.eds-nav-dot:hover { background: #666; }
+.eds-nav-dot.active { background: #0066FF; transform: scale(1.3); }
+.eds-nav-dot.has-tickets { background: #a89540; }
+.eds-nav-dot.has-tickets.active { background: #0066FF; box-shadow: 0 0 0 2px #a89540; }
+
+/* ── Scrollbar Styling ── */
+.eds-col-2 ::-webkit-scrollbar,
+.eds-ticket-list::-webkit-scrollbar { width: 6px; }
+.eds-col-2 ::-webkit-scrollbar-track,
+.eds-ticket-list::-webkit-scrollbar-track { background: transparent; }
+.eds-col-2 ::-webkit-scrollbar-thumb,
+.eds-ticket-list::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+.eds-col-2 ::-webkit-scrollbar-thumb:hover,
+.eds-ticket-list::-webkit-scrollbar-thumb:hover { background: #444; }
+
+/* ── Grid Overlay (Column 1) ── */
+.eds-grid-overlay {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  display: flex; gap: 16px; padding: 0 16px;
+  pointer-events: none; z-index: 5;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent, transparent 7px,
+    rgba(0,102,255,0.04) 7px, rgba(0,102,255,0.04) 8px
+  );
+}
+.eds-grid-col {
+  flex: 1; background: rgba(0,102,255,0.06);
+}
+.eds-safari-frame { position: relative; }
+
+/* Grid Toggle Button */
+.eds-grid-toggle {
+  position: absolute; top: 8px; right: 8px; z-index: 10;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: #333; border: 1px solid #444; border-radius: 4px;
+  color: #888; cursor: pointer; transition: all 0.15s;
+}
+.eds-grid-toggle:hover { background: #444; color: #ccc; }
+.eds-grid-toggle.active { background: #0066FF; border-color: #0066FF; color: #fff; }
+
+/* ── Grid Baseline (Column 2) ── */
+.eds-ds-content {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent, transparent 7px,
+    rgba(0,102,255,0.03) 7px, rgba(0,102,255,0.03) 8px
+  );
+}
+
+/* ── Component Tooltip ── */
+.eds-tooltip {
+  position: absolute; z-index: 20;
+  background: #333; color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; line-height: 1.3;
+  padding: 4px 8px; border-radius: 4px;
+  pointer-events: none;
+  white-space: nowrap;
+  display: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.eds-tooltip.visible { display: block; }
+.eds-tooltip-category {
+  color: #888; font-size: 10px;
+}
+
+/* ── Utility ── */
+.eds-hidden { display: none !important; }

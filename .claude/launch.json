@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "eds-server",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["studio/server.js", "early-bird", "8094"],
+      "port": 8094
+    }
+  ]
+}

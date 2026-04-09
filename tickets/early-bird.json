@@ -1,0 +1,16 @@
+{
+  "project": "early-bird",
+  "nextId": 2,
+  "tickets": [
+    {
+      "id": 1,
+      "screen": "landing-buyer",
+      "scope": "ds",
+      "instruction": "Set primary color to #0066FF and surface to #FAFAF8",
+      "response": null,
+      "status": "pending",
+      "createdAt": "2026-04-08T19:57:53.141Z",
+      "completedAt": null
+    }
+  ]
+}
